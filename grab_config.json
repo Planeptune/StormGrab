@@ -1,0 +1,22 @@
+{
+"grabParallel":1,
+"spoutParallel":1,
+"reduceParallel":1,
+"processLimit":1,
+"cmd":"java -Djava.ext.dirs=$STORM_HOME/lib/ -cp /home/neptune/Grab/StormGrab.jar com.neptune.GrabThread",
+"nameFormat":"frame-%05d-%d.png",
+"frameRate":1.0,
+"zkServers":["localhost"],
+"zkPort":2181,
+"zks":"localhost:2181",
+"id":"Storm-consumer",
+"topic":"grab-topic",
+"zkRoot":"",
+"sendTopic":"default-sending-topic",
+"brokerList":"localhost:9092",
+"redisHost":"develop.finalshares.com",
+"redisPort":6379,
+"redisPassword":"redis.2016@develop.finalshares.com",
+"workerNum":1,
+"logPath":"/home/neptune/logs/grab"
+}
