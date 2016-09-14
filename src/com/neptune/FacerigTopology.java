@@ -9,6 +9,7 @@ import backtype.storm.topology.TopologyBuilder;
 import com.google.gson.Gson;
 import com.neptune.api.Facerig;
 import com.neptune.bolt.facerig.FacerigBolt;
+import com.neptune.bolt.facerig.HDFSBolt;
 import com.neptune.bolt.facerig.PretreatBolt;
 import com.neptune.config.facerig.FacerigConfig;
 import com.neptune.constant.LogPath;
@@ -35,6 +36,7 @@ public class FacerigTopology {
     public static final String PRETREAT_BOLT = "pretreat-bolt";
     public static final String FACERIG_BOLT = "facerig-bolt";
     public static final String KAFKA_BOLT = "kafka-bolt";
+    public static final String HDFS_BOLT = "hdfs-bolt";
 
     /**
      * args[0]:配置文件路径
@@ -76,8 +78,9 @@ public class FacerigTopology {
                 config.pretreatParallel).shuffleGrouping(KAFKA_SPOUT);
         builder.setBolt(FACERIG_BOLT, new FacerigBolt(new Facerig()),
                 config.facerigParallel).shuffleGrouping(PRETREAT_BOLT);
+        builder.setBolt(HDFS_BOLT, new HDFSBolt(), config.hdfsParallel).shuffleGrouping(FACERIG_BOLT);
         builder.setBolt(KAFKA_BOLT, new KafkaBolt<String, String>(),
-                config.kafkaParallel).shuffleGrouping(FACERIG_BOLT);
+                config.kafkaParallel).shuffleGrouping(HDFS_BOLT);
 
         //提交topology
         Config tconfig = new Config();

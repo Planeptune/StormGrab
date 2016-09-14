@@ -28,7 +28,7 @@ import java.lang.management.ManagementFactory;
  */
 public class GrabThread extends Thread {
     private final static String TAG = "Grab";
-    private final static String LOG_PATH = LogPath.PATH + "/grab-thread.log";
+    private static String LOG_PATH = "/grab-thread.log";
     private final static int FAIL_LIMIT = 20;
 
     private HDFSHelper mHelper;
@@ -90,6 +90,7 @@ public class GrabThread extends Thread {
         }
         mGson = new Gson();
 
+        LOG_PATH = LogPath.PATH + "/grab-thread.log";
     }
 
     public FFmpegFrameGrabber getGrabber() {
@@ -211,7 +212,7 @@ public class GrabThread extends Thread {
                     time = System.currentTimeMillis();
                     fileName = String.format(mFormat, mCount, time);
                     //TODO 尝试在这里加了编码，如果下一个topology消息出错，首先检查此处
-                    pictureKey.setCodex(ImageBase64.encodingImg(is));
+                    //pictureKey.setCodex(ImageBase64.encodingImg(is));
 
                     res = mHelper.upload(is, fileName);
                     try {
@@ -226,6 +227,7 @@ public class GrabThread extends Thread {
                     pictureKey.url = mDir + File.separator + fileName;
                     pictureKey.video_id = mUrl;
                     pictureKey.time_stamp = String.valueOf(time);
+                    pictureKey.dir = mDir;
                     if (mProducer != null) {
                         String msg = mGson.toJson(pictureKey);
                         //Note:

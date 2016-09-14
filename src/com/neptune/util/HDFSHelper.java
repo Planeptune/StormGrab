@@ -20,7 +20,7 @@ public class HDFSHelper {
 
     public HDFSHelper(String ip) {
         this.ip = ip;
-        open("hdfs://hadoop01:9000");
+        //open("hdfs://hadoop01:9000");
     }
 
     /**

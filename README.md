@@ -26,7 +26,7 @@
 - workerNum	int，worker进程数量，影响负载与性能；
 - logPath	String，存放日志文件的目录，*强烈建议设置*；
 
-#*提交人脸分离的topology的方法：*
+#*提交人脸提取的topology的方法：*
 进入$STORM_HOME/bin目录，执行:storm jar /home/neptune/Grab/StormGrab.jar com.neptune.FacerigTopology /home/neptune/Grab/facerig_config.json topology-name
 其中的路径换成两个文件的实际路径，topology-name为拓扑名称，可随意起名
 
@@ -34,7 +34,8 @@
 - logPath    String，日志文件存放目录，*强烈建议设置*；
 - spoutParallel  int，spout的并行度；
 - pretreatParallel   int，预处理图片的bolt的并行度；
-- facerigParallel    int，人脸分离的bolt的并行度；
+- facerigParallel    int，人脸提取的bolt的并行度；
+- hdfsParallel  int，hdfs写入的并行度；
 - kafkaParallel	int，发送消息的bolt的并行度；
 - (!)targetTopic	String，kafka消息发送的目的topic；
 - (!)bootstrap	String，kafka集群地址；

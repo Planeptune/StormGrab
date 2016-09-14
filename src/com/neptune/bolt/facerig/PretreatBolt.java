@@ -8,13 +8,20 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import com.google.gson.Gson;
+import com.neptune.config.facerig.CaculatePicture;
 import com.neptune.config.facerig.PictureKey;
 import com.neptune.constant.LogPath;
-import com.neptune.util.ImageBase64;
+import com.neptune.util.HDFSHelper;
 import com.neptune.util.ImageHelper;
 import com.neptune.util.LogWriter;
 
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 
 /**
@@ -31,6 +38,7 @@ public class PretreatBolt extends BaseRichBolt {
 
     private int height = 227;
     private int width = 227;
+    private HDFSHelper mHelper;
 
     public PretreatBolt(int height, int width) {
         this.height = height;
@@ -42,6 +50,7 @@ public class PretreatBolt extends BaseRichBolt {
         collector = outputCollector;
         context = topologyContext;
         id = context.getThisTaskId();
+        mHelper = new HDFSHelper(null);
         LOG_PATH = LogPath.FPATH + "/pretreat-bolt.log";
         LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": prepared!");
     }
@@ -53,15 +62,26 @@ public class PretreatBolt extends BaseRichBolt {
         PictureKey key = gson.fromJson(json, PictureKey.class);
 
         if (key != null) {
-            //将图片暂存为本地文件并改变大小
-            BufferedImage img = ImageBase64.decoding(key.codex);
+            //将图片改变大小
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            BufferedImage img = null;
+            if (key.url != null && mHelper.download(baos, key.url)) {
+                InputStream in = new ByteArrayInputStream(baos.toByteArray());
+                try {
+                    img = ImageIO.read(in);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
             if (img != null) {
                 if (img.getHeight() != height || img.getWidth() != width) {
                     //裁剪图片
                     img = ImageHelper.resize(img, width, height);
-                    //编码发送
-                    key.setCodex(ImageBase64.encoding(img));
-                    collector.emit(new Values(key));
+                    //编码发送，采用与鉴黄项目相同的接口
+                    byte[] value = ((DataBufferByte) img.getRaster().getDataBuffer()).getData();
+                    CaculatePicture cal = new CaculatePicture(key.url, value, width, height);
+                    collector.emit(new Values(cal,key));
                     LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": Reduce command :" + json);
                 } else
                     LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": Fail to decode");
@@ -72,6 +92,6 @@ public class PretreatBolt extends BaseRichBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
-        outputFieldsDeclarer.declare(new Fields("PictureKey"));
+        outputFieldsDeclarer.declare(new Fields("CaculateInfo","PictureKey"));
     }
 }

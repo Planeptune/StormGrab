@@ -13,6 +13,7 @@ public class FacerigConfig implements Serializable {
     public int spoutParallel = 1;//spout的并行度
     public int pretreatParallel = 1;//预处理图片的bolt的并行度
     public int facerigParallel = 1;//人脸分离的bolt的并行度
+    public int hdfsParallel = 1;//hdfs写入的并行度
     public int kafkaParallel = 1;//发送消息的bolt的并行度
 
     public String targetTopic = "facerig-topic";//kafka消息发送的目的topic

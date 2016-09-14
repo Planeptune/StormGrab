@@ -13,8 +13,8 @@ public class PictureKey implements Serializable {
     public String video_id;
     //图片时间戳
     public String time_stamp;
-    //图片编码
-    public String codex;
+    //图片存放目录
+    public String dir;
 
     public PictureKey() {
 
@@ -50,7 +50,7 @@ public class PictureKey implements Serializable {
         return hashCode;
     }
 
-    public void setCodex(String codex) {
+    /*public void setCodex(String codex) {
         this.codex = codex;
-    }
+    }*/
 }
