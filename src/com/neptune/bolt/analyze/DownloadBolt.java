@@ -4,8 +4,11 @@ import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
+import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
+import backtype.storm.tuple.Values;
 import com.google.gson.Gson;
+import com.neptune.config.analyze.CaculateInfo;
 import com.neptune.config.facerig.PictureKey;
 import com.neptune.constant.LogPath;
 import com.neptune.util.HDFSHelper;
@@ -53,15 +56,16 @@ public class DownloadBolt extends BaseRichBolt {
         PictureKey key = gson.fromJson(json, PictureKey.class);
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        hdfs = new HDFSHelper(key.dir);
+        hdfs = new HDFSHelper(null);
         if (hdfs.download(os, key.url)) {
             try {
                 //读取图片
                 ByteArrayInputStream in = new ByteArrayInputStream(os.toByteArray());
                 BufferedImage img = ImageIO.read(in);
                 byte[] pixels = ((DataBufferByte) img.getRaster().getDataBuffer()).getData();
-                //压缩缓冲区
-
+                CaculateInfo info = new CaculateInfo(key.url, pixels, img.getWidth(), img.getHeight(), key.time_stamp);
+                collector.emit(new Values(info));
+                LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": download image from :" + key.url);
             } catch (IOException e) {
                 LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": " + e.getMessage());
             }
@@ -73,6 +77,6 @@ public class DownloadBolt extends BaseRichBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
-
+        outputFieldsDeclarer.declare(new Fields("CaculateInfo"));
     }
 }

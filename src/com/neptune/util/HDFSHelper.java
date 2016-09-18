@@ -116,6 +116,12 @@ public class HDFSHelper {
      * @param remote the remote hdfs system absolute file path
      */
     public boolean download(File file, String remote) {
+        if(!file.exists())
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         if (file.exists() && file.isFile()) {
             try {
                 OutputStream os = new FileOutputStream(file);
