@@ -13,9 +13,6 @@ import com.neptune.util.HDFSHelper;
 import com.neptune.util.LogWriter;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.Map;
 
 /**
@@ -31,13 +28,16 @@ public class HDFSBolt extends BaseRichBolt {
     private int id;
     private HDFSHelper hdfs;
 
+    public HDFSBolt() {
+        super();
+        LOG_PATH = LogPath.FPATH + "/hdfs-bolt.log";
+    }
 
     @Override
     public void prepare(Map map, TopologyContext topologyContext, OutputCollector outputCollector) {
         this.collector = outputCollector;
         this.context = topologyContext;
         id = context.getThisTaskId();
-        LOG_PATH = LogPath.FPATH + "/hdfs-bolt";
         LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": prepared");
     }
 
@@ -46,18 +46,14 @@ public class HDFSBolt extends BaseRichBolt {
         String remote = tuple.getStringByField("fileName");
         String path = tuple.getStringByField("localPath");
         PictureKey key = (PictureKey) tuple.getValueByField("PictureKey");
-        try {
-            InputStream in = new FileInputStream(path);
-            key.url = key.dir + File.separator + remote;
-            hdfs = new HDFSHelper(key.dir);
-            File f = new File(path);
-            hdfs.upload(f, remote);
-            f.delete();
+        key.url = key.dir + File.separator + remote;
+        hdfs = new HDFSHelper(key.dir);
+        File f = new File(path);
+        hdfs.upload(f, remote);
+        f.delete();
 
-            collector.emit(new Values(key));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        collector.emit(new Values(key));
+        LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": upload to hdfs :" + key.dir);
 
         collector.ack(tuple);
     }

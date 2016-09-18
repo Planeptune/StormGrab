@@ -43,6 +43,7 @@ public class PretreatBolt extends BaseRichBolt {
     public PretreatBolt(int height, int width) {
         this.height = height;
         this.width = width;
+        LOG_PATH = LogPath.FPATH + "/pretreat-bolt.log";
     }
 
     @Override
@@ -51,7 +52,6 @@ public class PretreatBolt extends BaseRichBolt {
         context = topologyContext;
         id = context.getThisTaskId();
         mHelper = new HDFSHelper(null);
-        LOG_PATH = LogPath.FPATH + "/pretreat-bolt.log";
         LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": prepared!");
     }
 
@@ -81,7 +81,7 @@ public class PretreatBolt extends BaseRichBolt {
                     //编码发送，采用与鉴黄项目相同的接口
                     byte[] value = ((DataBufferByte) img.getRaster().getDataBuffer()).getData();
                     CaculatePicture cal = new CaculatePicture(key.url, value, width, height);
-                    collector.emit(new Values(cal,key));
+                    collector.emit(new Values(cal, key));
                     LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": Reduce command :" + json);
                 } else
                     LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": Fail to decode");
@@ -92,6 +92,6 @@ public class PretreatBolt extends BaseRichBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
-        outputFieldsDeclarer.declare(new Fields("CaculateInfo","PictureKey"));
+        outputFieldsDeclarer.declare(new Fields("CaculateInfo", "PictureKey"));
     }
 }

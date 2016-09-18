@@ -5,5 +5,8 @@ package com.neptune.config.analyze;
  * 图片分析的topology所用的配置项
  */
 public class AnalyzeConfig {
-    int workerNum = 1;//工作进程数量
+    public int spoutParallel = 1;//spout并行度
+    public int workerNum = 1;//工作进程数量
+
+    public String logPath = "";//存放日志文件的目录
 }

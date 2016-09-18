@@ -48,6 +48,7 @@ public class GrabBolt implements IRichBolt {
         processLimit = grabLimit;
         this.sendTopic = sendTopic;
         this.brokerList = brokerList;
+        LOG_PATH = LogPath.PATH + "/grab-bolt.log";
     }
 
     public void setRedis(String host, int port, String password) {
@@ -62,7 +63,6 @@ public class GrabBolt implements IRichBolt {
         collector = outputCollector;
         id = context.getThisTaskId();
         processMap = new HashedMap();
-        LOG_PATH = LogPath.PATH + "/grab-bolt.log";
         LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": prepeared");
     }
 

@@ -28,12 +28,16 @@ public class ReduceBolt implements IRichBolt {
 
     private int id;
 
+    public ReduceBolt() {
+        super();
+        LOG_PATH = LogPath.PATH + "/reduce-bolt.log";
+    }
+
     @Override
     public void prepare(Map map, TopologyContext topologyContext, OutputCollector outputCollector) {
         this.context = topologyContext;
         this.collector = outputCollector;
         id = context.getThisTaskId();
-        LOG_PATH = LogPath.PATH + "/reduce-bolt.log";
         LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": prepared");
     }
 

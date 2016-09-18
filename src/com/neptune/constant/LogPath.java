@@ -7,4 +7,5 @@ package com.neptune.constant;
 public class LogPath {
     public static String PATH = "";//GrabTopolgy使用的日志文件目录
     public static String FPATH = "";//FacerigTopology使用的日志文件目录
+    public static String APATH = "";//AnalyzeTopology使用的日志文件目录
 }

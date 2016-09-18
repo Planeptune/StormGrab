@@ -35,6 +35,7 @@ public class FacerigBolt extends BaseRichBolt {
 
     public FacerigBolt(FacerigImpl facerig) {
         this.facerig = facerig;
+        LOG_PATH = LogPath.FPATH + "/pretreat-bolt.log";
     }
 
     @Override
@@ -42,7 +43,6 @@ public class FacerigBolt extends BaseRichBolt {
         collector = outputCollector;
         context = topologyContext;
         id = context.getThisTaskId();
-        LOG_PATH = LogPath.FPATH + "/pretreat-bolt.log";
         LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": prepared!");
     }
 
