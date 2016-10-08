@@ -13,6 +13,7 @@
 "zkServers":["localhost"],
 "zkPort":2181,
 "topic":"source-topic",
+"hdfsDir":"hdfs://hadoop01:9000/test/temp",
 "height":227,
 "width":227,
 "workerNum":1
