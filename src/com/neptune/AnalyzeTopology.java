@@ -7,10 +7,10 @@ import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.spout.SchemeAsMultiScheme;
 import backtype.storm.topology.TopologyBuilder;
 import com.google.gson.Gson;
+import com.neptune.api.Analyze;
 import com.neptune.bolt.analyze.AnalyzeBolt;
 import com.neptune.bolt.analyze.DownloadBolt;
 import com.neptune.config.analyze.AnalyzeConfig;
-import com.neptune.constant.LogPath;
 import com.neptune.util.FileTools;
 import com.neptune.util.LogWriter;
 import storm.kafka.*;
@@ -32,7 +32,7 @@ public class AnalyzeTopology {
     private static final String ANALYZE_BOLT = "analyze-bolt";
 
     public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException {
-        AnalyzeConfig config = null;
+        AnalyzeConfig config;
         try {
             String json = FileTools.read(new File(args[0]));
             Gson gson = new Gson();
@@ -45,9 +45,13 @@ public class AnalyzeTopology {
         if (config == null)
             return;
 
-        LogPath.APATH = config.logPath;
-        LOG_PATH = LogPath.APATH + "/analyze-topology.log";
+        //设置日志文件路径
+        LOG_PATH = config.logPath + "/analyze-topology.log";
         LogWriter.writeLog(LOG_PATH, TAG + ": load config from :" + args[0]);
+
+        //设置人脸识别缓冲区大小和等待时间
+        Analyze.bufferLimit = config.bufferLimit;
+        Analyze.timeLimit = config.timeLimit;
 
         //配置kafkaspout
         BrokerHosts brokers = new ZkHosts(config.zks);
@@ -60,8 +64,10 @@ public class AnalyzeTopology {
         //创建topology
         TopologyBuilder builder = new TopologyBuilder();
         builder.setSpout(KAFKA_SPOUT, new KafkaSpout(conf), config.spoutParallel);
-        builder.setBolt(DOWNLOAD_BOLT, new DownloadBolt(), config.downloadParallel).shuffleGrouping(KAFKA_SPOUT);
-        builder.setBolt(ANALYZE_BOLT, new AnalyzeBolt(), config.analyzeParallel).shuffleGrouping(DOWNLOAD_BOLT);
+        builder.setBolt(DOWNLOAD_BOLT, new DownloadBolt(config.logPath + "/download-bolt.log"),
+                config.downloadParallel).shuffleGrouping(KAFKA_SPOUT);
+        builder.setBolt(ANALYZE_BOLT, new AnalyzeBolt(config.logPath + "/analyze-bolt.log"),
+                config.analyzeParallel).shuffleGrouping(DOWNLOAD_BOLT);
 
         //提交topology
         Config tconfig = new Config();

@@ -7,16 +7,12 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
-import com.google.gson.Gson;
-import com.neptune.api.FacerigImpl;
+import com.neptune.api.Facerig;
 import com.neptune.config.facerig.CaculatePicture;
 import com.neptune.config.facerig.PictureKey;
-import com.neptune.constant.LogPath;
 import com.neptune.util.LogWriter;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -25,17 +21,15 @@ import java.util.Map;
  */
 public class FacerigBolt extends BaseRichBolt {
     private static final String TAG = "facerig-bolt";
-    private static String LOG_PATH = "/pretreat-bolt.log";
+    private String logPath;
 
     private OutputCollector collector;
     private TopologyContext context;
     private int id;
 
-    private FacerigImpl facerig;//人脸分离接口
-
-    public FacerigBolt(FacerigImpl facerig) {
-        this.facerig = facerig;
-        LOG_PATH = LogPath.FPATH + "/pretreat-bolt.log";
+    public FacerigBolt(String logPath) {
+        super();
+        this.logPath = logPath;
     }
 
     @Override
@@ -43,7 +37,7 @@ public class FacerigBolt extends BaseRichBolt {
         collector = outputCollector;
         context = topologyContext;
         id = context.getThisTaskId();
-        LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": prepared!");
+        LogWriter.writeLog(logPath, TAG + "@" + id + ": prepared!");
     }
 
     @Override
@@ -52,13 +46,14 @@ public class FacerigBolt extends BaseRichBolt {
         PictureKey key = (PictureKey) tuple.getValueByField("PictureKey");
 
         //将图片进行人脸分离
-        List<String> paths = facerig.facerig(cal);
+        List<String> paths = Facerig.facerig(cal);
         int i = 0;
         for (String path : paths) {
-            collector.emit(new Values(String.valueOf(System.currentTimeMillis()) + "@" + i + ".png", path, key));
+            File f = new File(path);
+            collector.emit(new Values(path, key));
         }
 
-        LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": seperate image at :" + cal.url);
+        LogWriter.writeLog(logPath, TAG + "@" + id + ": seperate image at :" + cal.url);
 
         //collector.emit(new Values(list));
 
@@ -67,6 +62,6 @@ public class FacerigBolt extends BaseRichBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
-        outputFieldsDeclarer.declare(new Fields("fileName", "localPath", "PictureKey"));
+        outputFieldsDeclarer.declare(new Fields("localPath", "PictureKey"));
     }
 }

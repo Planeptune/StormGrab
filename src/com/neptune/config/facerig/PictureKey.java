@@ -13,8 +13,6 @@ public class PictureKey implements Serializable {
     public String video_id;
     //图片时间戳
     public String time_stamp;
-    //图片存放目录
-    public String dir;
 
     public PictureKey() {
 

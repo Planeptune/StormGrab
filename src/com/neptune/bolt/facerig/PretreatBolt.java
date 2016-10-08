@@ -10,7 +10,6 @@ import backtype.storm.tuple.Values;
 import com.google.gson.Gson;
 import com.neptune.config.facerig.CaculatePicture;
 import com.neptune.config.facerig.PictureKey;
-import com.neptune.constant.LogPath;
 import com.neptune.util.HDFSHelper;
 import com.neptune.util.ImageHelper;
 import com.neptune.util.LogWriter;
@@ -30,7 +29,7 @@ import java.util.Map;
  */
 public class PretreatBolt extends BaseRichBolt {
     private static final String TAG = "pretreat-bolt";
-    private static String LOG_PATH = "/pretreat-bolt.log";
+    private String logPath;
 
     private OutputCollector collector;
     private TopologyContext context;
@@ -40,10 +39,10 @@ public class PretreatBolt extends BaseRichBolt {
     private int width = 227;
     private HDFSHelper mHelper;
 
-    public PretreatBolt(int height, int width) {
+    public PretreatBolt(int height, int width, String logPath) {
         this.height = height;
         this.width = width;
-        LOG_PATH = LogPath.FPATH + "/pretreat-bolt.log";
+        this.logPath = logPath;
     }
 
     @Override
@@ -52,7 +51,7 @@ public class PretreatBolt extends BaseRichBolt {
         context = topologyContext;
         id = context.getThisTaskId();
         mHelper = new HDFSHelper(null);
-        LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": prepared!");
+        LogWriter.writeLog(logPath, TAG + "@" + id + ": prepared!");
     }
 
     @Override
@@ -62,7 +61,7 @@ public class PretreatBolt extends BaseRichBolt {
         PictureKey key = gson.fromJson(json, PictureKey.class);
 
         if (key != null) {
-            //将图片改变大小
+            //下载图片
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             BufferedImage img = null;
             if (key.url != null && mHelper.download(baos, key.url)) {
@@ -82,9 +81,9 @@ public class PretreatBolt extends BaseRichBolt {
                     byte[] value = ((DataBufferByte) img.getRaster().getDataBuffer()).getData();
                     CaculatePicture cal = new CaculatePicture(key.url, value, width, height);
                     collector.emit(new Values(cal, key));
-                    LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": Reduce command :" + json);
+                    LogWriter.writeLog(logPath, TAG + "@" + id + ": Reduce command :" + json);
                 } else
-                    LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": Fail to decode");
+                    LogWriter.writeLog(logPath, TAG + "@" + id + ": Fail to decode");
             }
         }
         collector.ack(tuple);

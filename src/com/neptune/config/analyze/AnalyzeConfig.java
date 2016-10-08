@@ -13,6 +13,7 @@ public class AnalyzeConfig {
     public String logPath = "";//存放日志文件的目录
 
     public int bufferLimit = 0;//图片处理缓存的数量
+    public int timeLimit = 1000;//图片处理缓存等待时间
 
     public String zks = "localhost:2181";//kafka需要的zookeeper地址
     public String id = "analyze-consumer";//kafka消费者分组名称

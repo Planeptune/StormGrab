@@ -25,6 +25,8 @@ public class FacerigConfig implements Serializable {
     public int zkPort = 2181;//zookeeper端口
     public String topic = "default-topic";//消息来源的topic
 
+    public String hdfsDir = "hdfs://localhost:9000/";//存放人脸图片的hdfs目录
+
     public int height = 227;//图片高度
     public int width = 227;//图片宽度
 

@@ -3,12 +3,10 @@ package com.neptune;
 import com.google.gson.Gson;
 import com.neptune.config.facerig.PictureKey;
 import com.neptune.config.grab.GrabCommand;
-import com.neptune.constant.LogPath;
 import com.neptune.kafka.KafkaNewProducer;
 import com.neptune.tool.IVideoNotifier;
 import com.neptune.tool.VideoNotifierImpl;
 import com.neptune.util.HDFSHelper;
-import com.neptune.util.ImageBase64;
 import com.neptune.util.ImageHelper;
 import com.neptune.util.LogWriter;
 import org.apache.kafka.clients.producer.Callback;
@@ -28,7 +26,7 @@ import java.lang.management.ManagementFactory;
  */
 public class GrabThread extends Thread {
     private final static String TAG = "Grab";
-    private static String LOG_PATH = "/grab-thread.log";
+    public static String logPath;
     private final static int FAIL_LIMIT = 20;
 
     private HDFSHelper mHelper;
@@ -80,8 +78,8 @@ public class GrabThread extends Thread {
             mCallback = new Callback() {
                 public void onCompletion(RecordMetadata recordMetadata, Exception e) {
                     if (e != null) {
-                        LogWriter.writeLog(LOG_PATH, "Kafka Exception :" + e.getMessage());
-                        LogWriter.writeLog(LOG_PATH, mUrl + " The offset of the record is: " + recordMetadata.offset());
+                        LogWriter.writeLog(logPath, "Kafka Exception :" + e.getMessage());
+                        LogWriter.writeLog(logPath, mUrl + " The offset of the record is: " + recordMetadata.offset());
                     } else {
                         LogWriter.writeLog("grab-thread,log", mUrl + " The offset of the record is: " + recordMetadata.offset());
                     }
@@ -89,8 +87,6 @@ public class GrabThread extends Thread {
             };
         }
         mGson = new Gson();
-
-        LOG_PATH = LogPath.PATH + "/grab-thread.log";
     }
 
     public FFmpegFrameGrabber getGrabber() {
@@ -138,7 +134,7 @@ public class GrabThread extends Thread {
         PictureKey pictureKey = new PictureKey();
         try {
             mNotifier.notify("prepare to start grabbing video from" + mUrl);
-            LogWriter.writeLog(LOG_PATH, mUrl + " prepared for grabbing");
+            LogWriter.writeLog(logPath, mUrl + " prepared for grabbing");
             mGrabber.setTimeout(3000);
             mGrabber.start();
             double frameRate = mGrabber.getFrameRate();
@@ -147,20 +143,20 @@ public class GrabThread extends Thread {
                     "frameRate=" + frameRate
                     + ", frameLength=" + mGrabber.getLengthInFrames()
                     + ", grabStep=" + grabStep);
-            LogWriter.writeLog(LOG_PATH, mUrl + "started,frameRate=" + mGrabber.getLengthInFrames() + ",grabStep=" + grabStep);
+            LogWriter.writeLog(logPath, mUrl + "started,frameRate=" + mGrabber.getLengthInFrames() + ",grabStep=" + grabStep);
             while (mIsRunning) {
 
                 if (!mIsActive) {
-                    LogWriter.writeLog(LOG_PATH, mUrl + " grab paused");
+                    LogWriter.writeLog(logPath, mUrl + " grab paused");
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
-                        LogWriter.writeLog(LOG_PATH, e.getMessage());
+                        LogWriter.writeLog(logPath, e.getMessage());
                     }
                     continue;
                 }
                 mNotifier.notify("prepare to grab frame " + mCount + "/" + mIndex);
-                LogWriter.writeLog(LOG_PATH, mUrl + " prepared for grabbing frame " + mCount + "/" + mIndex);
+                LogWriter.writeLog(logPath, mUrl + " prepared for grabbing frame " + mCount + "/" + mIndex);
 
                 //抓取图片
                 try {
@@ -173,10 +169,10 @@ public class GrabThread extends Thread {
                     else
                         num = 0;
                     frameNumber = mGrabber.getFrameNumber();
-                    LogWriter.writeLog(LOG_PATH, "frame number= " + frameNumber);
+                    LogWriter.writeLog(logPath, "frame number= " + frameNumber);
                     //抓到同一帧，继续（？）
                     if (frameNumber == lastNumber) {
-                        LogWriter.writeLog(LOG_PATH, "grab same frame: " + frame);
+                        LogWriter.writeLog(logPath, "grab same frame: " + frame);
                         continue;
                     }
                     //抓到不同帧，记录帧
@@ -184,12 +180,12 @@ public class GrabThread extends Thread {
                         lastNumber = frameNumber;
                     }
                 } catch (FrameGrabber.Exception e) {
-                    LogWriter.writeLog(LOG_PATH, e.getMessage());
+                    LogWriter.writeLog(logPath, e.getMessage());
                     continue;
                 }
 
                 mNotifier.notify("grab frame " + mCount + "/" + mIndex);
-                LogWriter.writeLog(LOG_PATH, mUrl + "grab frame " + mCount + "/" + "mIndex");
+                LogWriter.writeLog(logPath, mUrl + "grab frame " + mCount + "/" + "mIndex");
                 image = mIlplImageConverter.convertToIplImage(frame);
                 if (image != null) {
                     //resize image
@@ -198,36 +194,33 @@ public class GrabThread extends Thread {
                     bi = new BufferedImage(oldW, oldH, BufferedImage.TYPE_3BYTE_BGR);
                     bi.getGraphics().drawImage(mImageConverter.getBufferedImage(frame), 0, 0, oldW, oldH, null);
                     bi = ImageHelper.resize(bi, mWidth, mHeight);
-                    LogWriter.writeLog(LOG_PATH, mUrl + " size: " + bi.getWidth() + "*" + bi.getHeight());
+                    LogWriter.writeLog(logPath, mUrl + " size: " + bi.getWidth() + "*" + bi.getHeight());
                     //write image to byte array output stream
                     baos = new ByteArrayOutputStream();
                     try {
 //                        baos = new FileOutputStream(mDir+File.separator+String.format(mFormat, mCount, System.currentTimeMillis()));
                         ImageIO.write(bi, "png", baos);
                     } catch (IOException e) {
-                        LogWriter.writeLog(LOG_PATH, e.getMessage());
+                        LogWriter.writeLog(logPath, e.getMessage());
                     }
                     //write data in byte array output stream to hdfs
                     InputStream is = new ByteArrayInputStream(baos.toByteArray());
                     time = System.currentTimeMillis();
                     fileName = String.format(mFormat, mCount, time);
-                    //TODO 尝试在这里加了编码，如果下一个topology消息出错，首先检查此处
-                    //pictureKey.setCodex(ImageBase64.encodingImg(is));
 
                     res = mHelper.upload(is, fileName);
                     try {
                         baos.close();
                         baos = null;
                     } catch (IOException e) {
-                        LogWriter.writeLog(LOG_PATH, e.getMessage());
+                        LogWriter.writeLog(logPath, e.getMessage());
                     }
                     mNotifier.notify("write frame " + mCount + " to " + fileName + ", " + res);
-                    LogWriter.writeLog(LOG_PATH, mUrl + "write frame " + mCount + " to " + fileName + ", " + res);
+                    LogWriter.writeLog(logPath, mUrl + "write frame " + mCount + " to " + fileName + ", " + res);
                     //send message to kafka
                     pictureKey.url = mDir + File.separator + fileName;
                     pictureKey.video_id = mUrl;
                     pictureKey.time_stamp = String.valueOf(time);
-                    pictureKey.dir = mDir;
                     if (mProducer != null) {
                         String msg = mGson.toJson(pictureKey);
                         //Note:
@@ -238,27 +231,27 @@ public class GrabThread extends Thread {
 
                         try {
                             mProducer.send(mTopic, msg);
-                            LogWriter.writeLog(LOG_PATH, mTopic + "send kafka message: " + msg);
+                            LogWriter.writeLog(logPath, mTopic + "send kafka message: " + msg);
                         } catch (InvalidTimestampException e) {
-                            LogWriter.writeLog(LOG_PATH, mTopic + " send message fail: " + e.getMessage());
+                            LogWriter.writeLog(logPath, mTopic + " send message fail: " + e.getMessage());
                         } catch (Exception e) {
-                            LogWriter.writeLog(LOG_PATH, "kafka exception: " + e.getMessage());
+                            LogWriter.writeLog(logPath, "kafka exception: " + e.getMessage());
                         }
                     }
                     mCount++;
                 } else {
-                    LogWriter.writeLog(LOG_PATH, mUrl + " sorry, the image of frame " + mIndex + " is null");
+                    LogWriter.writeLog(logPath, mUrl + " sorry, the image of frame " + mIndex + " is null");
                 }
                 mIndex++;
             }
             mNotifier.notify("grabbing total: " + mCount + "/" + mIndex + " in " + mUrl);
-            LogWriter.writeLog(LOG_PATH, mUrl + "grabbing total: " + mCount + "/" + mIndex);
+            LogWriter.writeLog(logPath, mUrl + "grabbing total: " + mCount + "/" + mIndex);
 
             mGrabber.stop();
             mGrabber.release();
 
         } catch (FrameGrabber.Exception e) {
-            LogWriter.writeLog(LOG_PATH, e.getMessage());
+            LogWriter.writeLog(logPath, e.getMessage());
         } finally {
             clear();
         }
@@ -294,10 +287,10 @@ public class GrabThread extends Thread {
         try {
             mGrabber.start();
             mNotifier.notify("start grabbing");
-            LogWriter.writeLog(LOG_PATH, mUrl + " start grabbing");
+            LogWriter.writeLog(logPath, mUrl + " start grabbing");
             return true;
         } catch (FrameGrabber.Exception e) {
-            LogWriter.writeLog(LOG_PATH, e.getMessage());
+            LogWriter.writeLog(logPath, e.getMessage());
             return false;
         }
 
@@ -315,7 +308,7 @@ public class GrabThread extends Thread {
             mGrabber.restart();
             return true;
         } catch (FrameGrabber.Exception e) {
-            LogWriter.writeLog(LOG_PATH, e.getMessage());
+            LogWriter.writeLog(logPath, e.getMessage());
             return false;
         }
     }
@@ -327,7 +320,7 @@ public class GrabThread extends Thread {
         mIsRunning = false;
         mIsActive = false;
         mNotifier.notify("stop grabbing");
-        LogWriter.writeLog(LOG_PATH, mUrl + " stop grabbing");
+        LogWriter.writeLog(logPath, mUrl + " stop grabbing");
     }
 
     /**
@@ -336,7 +329,7 @@ public class GrabThread extends Thread {
     public void pauseGrab() {
         mIsActive = false;
         mNotifier.notify("pause grabbing");
-        LogWriter.writeLog(LOG_PATH, mUrl + "pause grabbing");
+        LogWriter.writeLog(logPath, mUrl + "pause grabbing");
     }
 
     /**
@@ -345,7 +338,7 @@ public class GrabThread extends Thread {
     public void continueGrab() {
         mIsActive = true;
         mNotifier.notify("continue grabbing");
-        LogWriter.writeLog(LOG_PATH, mUrl + "continue grabbing");
+        LogWriter.writeLog(logPath, mUrl + "continue grabbing");
     }
 
     public boolean isRunning() {
@@ -496,7 +489,7 @@ public class GrabThread extends Thread {
                 double rate = Double.valueOf(args[7]);
                 grabThread.setGrabRate(rate);
             } catch (NumberFormatException e) {
-                LogWriter.writeLog(LOG_PATH, e.getMessage());
+                LogWriter.writeLog(logPath, e.getMessage());
             }
         }
         grabThread.start();
@@ -518,15 +511,15 @@ public class GrabThread extends Thread {
         if (brokerList != null && brokerList.length() > 2)
             listenThread.start();
 
-        LogWriter.writeLog(LOG_PATH, url + "Child process: GrabThread is running in " + pid);
+        LogWriter.writeLog(logPath, url + "Child process: GrabThread is running in " + pid);
 
         try {
             grabThread.join();
         } catch (InterruptedException e) {
-            LogWriter.writeLog(LOG_PATH, e.getMessage());
+            LogWriter.writeLog(logPath, e.getMessage());
         } finally {
             listenThread.stopListen();
-            LogWriter.writeLog(LOG_PATH, url + "Child process: GrabThread  " + pid + " has exit");
+            LogWriter.writeLog(logPath, url + "Child process: GrabThread  " + pid + " has exit");
             System.exit(0);
         }
 

@@ -8,7 +8,6 @@ import backtype.storm.tuple.Tuple;
 import com.neptune.api.Analyze;
 import com.neptune.config.analyze.AnalyzeResult;
 import com.neptune.config.analyze.CaculateInfo;
-import com.neptune.constant.LogPath;
 import com.neptune.util.LogWriter;
 
 import java.util.List;
@@ -20,15 +19,15 @@ import java.util.Map;
  */
 public class AnalyzeBolt extends BaseRichBolt {
     private static final String TAG = "analyze-bolt";
-    private static String LOG_PATH = "/analyze-bolt.log";
+    private String logPath;
 
     private OutputCollector collector;
     private TopologyContext context;
     private int id;
 
-    public AnalyzeBolt() {
+    public AnalyzeBolt(String logPath) {
         super();
-        LOG_PATH = LogPath.APATH + "/analyze-bolt.log";
+        this.logPath = logPath;
     }
 
     @Override
@@ -36,7 +35,7 @@ public class AnalyzeBolt extends BaseRichBolt {
         collector = outputCollector;
         context = topologyContext;
         id = context.getThisTaskId();
-        LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": prepared");
+        LogWriter.writeLog(logPath, TAG + "@" + id + ": prepared");
     }
 
     @Override
@@ -44,7 +43,7 @@ public class AnalyzeBolt extends BaseRichBolt {
         CaculateInfo info = (CaculateInfo) tuple.getValue(0);
         List<AnalyzeResult> list = Analyze.append(info);
         if (list == null) {
-            LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": append image at :" + info.key);
+            LogWriter.writeLog(logPath, TAG + "@" + id + ": append image at :" + info.key);
         } else {
             //TODO 对识别结果的后续处理
         }

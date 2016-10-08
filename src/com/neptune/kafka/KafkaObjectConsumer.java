@@ -73,8 +73,6 @@ public class KafkaObjectConsumer {
                     minterface.dealWithData(element.value());// 处理方法应实现MethodInterface接口
                 }
                 consumer.commitSync();// 提交确认信息，阻塞式的更新offset
-                // TODO 测试语句，可删除
-                // System.out.println(getCommittedOffset());
                 buffer.clear();
             }
             // System.out.println("end of while");
@@ -179,34 +177,8 @@ public class KafkaObjectConsumer {
         return consumer.committed(new TopicPartition(topic, 0)).offset();
     }
 
-	/*
-	 * public static void main(String args[]) throws Exception { O o=new O();
-	 * o.start(); KafkaObjectConsumer c = new
-	 * KafkaObjectConsumer("192.168.0.169:9092", "groupObject",
-	 * "dont-delete-this-topic"); c.getMessage(new Deal()); }
-	 */
+
 }
 
-/*
- * class TestData implements Serializable { private static final long
- * serialVersionUID = 1L; int i = 10; String s = "testing"; double d =
- * 3.1415926; }
- */
 
-/*
- * class Deal implements MethodInterface {
- * 
- * @Override public void dealWithData(Object value) { // TODO Auto-generated
- * method stub TestData d = (TestData) value; System.out.println("int:" + d.i +
- * ",string:" + d.s + ",double:" + d.d); }
- * 
- * }
- */
 
-/*
- * class O extends Thread { public void run() { TestData data = new TestData();
- * KafkaObjectProducer p = new KafkaObjectProducer("192.168.0.169:9092");
- * while(true) { try { p.send("dont-delete-this-topic", data); } catch
- * (Exception e) { // TODO Auto-generated catch block e.printStackTrace(); } } }
- * }
- */

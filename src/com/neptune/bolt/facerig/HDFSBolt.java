@@ -7,8 +7,8 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+import com.google.gson.Gson;
 import com.neptune.config.facerig.PictureKey;
-import com.neptune.constant.LogPath;
 import com.neptune.util.HDFSHelper;
 import com.neptune.util.LogWriter;
 
@@ -21,16 +21,18 @@ import java.util.Map;
  */
 public class HDFSBolt extends BaseRichBolt {
     private static final String TAG = "hdfs-bolt";
-    private static String LOG_PATH = "/hdfs-bolt";
+    private String logPath;
 
     private OutputCollector collector;
     private TopologyContext context;
     private int id;
     private HDFSHelper hdfs;
+    private String dir;
 
-    public HDFSBolt() {
+    public HDFSBolt(String hdfsDir, String logPath) {
         super();
-        LOG_PATH = LogPath.FPATH + "/hdfs-bolt.log";
+        dir = hdfsDir;
+        this.logPath = logPath;
     }
 
     @Override
@@ -38,22 +40,25 @@ public class HDFSBolt extends BaseRichBolt {
         this.collector = outputCollector;
         this.context = topologyContext;
         id = context.getThisTaskId();
-        LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": prepared");
+        LogWriter.writeLog(logPath, TAG + "@" + id + ": prepared");
     }
 
     @Override
     public void execute(Tuple tuple) {
-        String remote = tuple.getStringByField("fileName");
+        //String remote = tuple.getStringByField("fileName");
         String path = tuple.getStringByField("localPath");
+        String remote = (new File(path)).getName();
+        Gson gson = new Gson();
         PictureKey key = (PictureKey) tuple.getValueByField("PictureKey");
-        key.url = key.dir + File.separator + remote;
-        hdfs = new HDFSHelper(key.dir);
+        key.url = dir + File.separator + remote;
+        hdfs = new HDFSHelper(null);
         File f = new File(path);
-        hdfs.upload(f, remote);
-        f.delete();
+        hdfs.upload(f, key.url);
+        //TODO 测试完成后恢复该语句
+        //f.delete();
 
-        collector.emit(new Values(key));
-        LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": upload to hdfs :" + key.dir);
+        collector.emit(new Values(gson.toJson(key)));
+        LogWriter.writeLog(logPath, TAG + "@" + id + ": upload to hdfs :" + key.url);
 
         collector.ack(tuple);
     }

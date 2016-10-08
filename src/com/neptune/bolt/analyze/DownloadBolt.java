@@ -10,7 +10,6 @@ import backtype.storm.tuple.Values;
 import com.google.gson.Gson;
 import com.neptune.config.analyze.CaculateInfo;
 import com.neptune.config.facerig.PictureKey;
-import com.neptune.constant.LogPath;
 import com.neptune.util.HDFSHelper;
 import com.neptune.util.LogWriter;
 
@@ -27,7 +26,7 @@ import java.util.Map;
  * 将人脸文件从HDFS上下载的bolt
  */
 public class DownloadBolt extends BaseRichBolt {
-    private static String LOG_PATH = "/download-bolt.log";
+    private String logPath;
     private static final String TAG = "dowload-bolt";
 
     private OutputCollector collector;
@@ -36,9 +35,9 @@ public class DownloadBolt extends BaseRichBolt {
 
     private HDFSHelper hdfs;
 
-    public DownloadBolt() {
+    public DownloadBolt(String logPath) {
         super();
-        LOG_PATH = LogPath.APATH + "/download-bolt.log";
+        this.logPath = logPath;
     }
 
     @Override
@@ -46,7 +45,7 @@ public class DownloadBolt extends BaseRichBolt {
         context = topologyContext;
         collector = outputCollector;
         id = context.getThisTaskId();
-        LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": prepared");
+        LogWriter.writeLog(logPath, TAG + "@" + id + ": prepared");
     }
 
     @Override
@@ -65,12 +64,12 @@ public class DownloadBolt extends BaseRichBolt {
                 byte[] pixels = ((DataBufferByte) img.getRaster().getDataBuffer()).getData();
                 CaculateInfo info = new CaculateInfo(key.url, pixels, img.getWidth(), img.getHeight(), key.time_stamp);
                 collector.emit(new Values(info));
-                LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": download image from :" + key.url);
+                LogWriter.writeLog(logPath, TAG + "@" + id + ": download image from :" + key.url);
             } catch (IOException e) {
-                LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": " + e.getMessage());
+                LogWriter.writeLog(logPath, TAG + "@" + id + ": " + e.getMessage());
             }
         } else {
-            LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": fail to download :" + key.url);
+            LogWriter.writeLog(logPath, TAG + "@" + id + ": fail to download :" + key.url);
         }
         collector.ack(tuple);
     }

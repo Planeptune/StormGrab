@@ -7,12 +7,10 @@ import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.spout.SchemeAsMultiScheme;
 import backtype.storm.topology.TopologyBuilder;
 import com.google.gson.Gson;
-import com.neptune.api.Facerig;
 import com.neptune.bolt.facerig.FacerigBolt;
 import com.neptune.bolt.facerig.HDFSBolt;
 import com.neptune.bolt.facerig.PretreatBolt;
 import com.neptune.config.facerig.FacerigConfig;
-import com.neptune.constant.LogPath;
 import com.neptune.util.FileTools;
 import com.neptune.util.LogWriter;
 import storm.kafka.*;
@@ -58,9 +56,9 @@ public class FacerigTopology {
 
         if (config == null)
             return;
-        LogPath.FPATH = config.logPath;
 
-        LOG_PATH = LogPath.FPATH + "/facerig-topology.log";
+        //设置日志文件路径
+        LOG_PATH = config.logPath + "/facerig-topology.log";
         LogWriter.writeLog(LOG_PATH, TAG + ": read config from :" + confPath);
 
         //配置kafkaspout
@@ -74,11 +72,11 @@ public class FacerigTopology {
         //创建topology
         TopologyBuilder builder = new TopologyBuilder();
         builder.setSpout(KAFKA_SPOUT, new KafkaSpout(conf), config.spoutParallel);
-        builder.setBolt(PRETREAT_BOLT, new PretreatBolt(config.height, config.width),
+        builder.setBolt(PRETREAT_BOLT, new PretreatBolt(config.height, config.width, config.logPath + "/pretreat-bolt.log"),
                 config.pretreatParallel).shuffleGrouping(KAFKA_SPOUT);
-        builder.setBolt(FACERIG_BOLT, new FacerigBolt(new Facerig()),
+        builder.setBolt(FACERIG_BOLT, new FacerigBolt(config.logPath + "/facerig-bolt.log"),
                 config.facerigParallel).shuffleGrouping(PRETREAT_BOLT);
-        builder.setBolt(HDFS_BOLT, new HDFSBolt(), config.hdfsParallel).shuffleGrouping(FACERIG_BOLT);
+        builder.setBolt(HDFS_BOLT, new HDFSBolt(config.hdfsDir, config.logPath + "/hdfs-bolt.log"), config.hdfsParallel).shuffleGrouping(FACERIG_BOLT);
         builder.setBolt(KAFKA_BOLT, new KafkaBolt<String, String>(),
                 config.kafkaParallel).shuffleGrouping(HDFS_BOLT);
 

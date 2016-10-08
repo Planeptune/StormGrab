@@ -11,11 +11,10 @@ import com.google.gson.Gson;
 import com.neptune.bolt.grab.GrabBolt;
 import com.neptune.bolt.grab.ReduceBolt;
 import com.neptune.config.grab.GrabConfig;
-import com.neptune.constant.LogPath;
-import com.neptune.util.FileTools;
 import com.neptune.tool.Grabber;
-import com.neptune.util.LogWriter;
 import com.neptune.tool.VideoGrabber;
+import com.neptune.util.FileTools;
+import com.neptune.util.LogWriter;
 import storm.kafka.*;
 
 import java.io.File;
@@ -51,8 +50,10 @@ public class GrabTopology {
             LogWriter.writeLog(LOG_PATH, TAG + ":Fail to read json");
             return;
         }
-        LogPath.PATH = config.logPath;
-        LOG_PATH = LogPath.PATH + "/grab-topology.log";
+
+        //设置日志文件路径
+        LOG_PATH = config.logPath + "/grab-topology.log";
+        GrabThread.logPath = config.logPath + "/grab-thread.log";
         LogWriter.writeLog(LOG_PATH, TAG + ":Read config from " + configFile);
 
         //设置kafkaSpout的选项
@@ -69,8 +70,8 @@ public class GrabTopology {
         //构建topology
         TopologyBuilder builder = new TopologyBuilder();
         builder.setSpout(KAFKA_SPOUT, new KafkaSpout(sconfig), config.spoutParallel);
-        builder.setBolt(REDUCE_BOLT, new ReduceBolt(), config.reduceParallel).shuffleGrouping(KAFKA_SPOUT);
-        GrabBolt grabBolt = new GrabBolt(grabber, config.processLimit / config.grabParallel, config.sendTopic, config.brokerList);
+        builder.setBolt(REDUCE_BOLT, new ReduceBolt(config.logPath + "/reduce-bolt.log"), config.reduceParallel).shuffleGrouping(KAFKA_SPOUT);
+        GrabBolt grabBolt = new GrabBolt(grabber, config.processLimit / config.grabParallel, config.sendTopic, config.brokerList, config.logPath + "/grab-bolt.log");
         grabBolt.setRedis(config.redisHost, config.redisPort, config.redisPassword);
         builder.setBolt(GRAB_BOLT, grabBolt, config.grabParallel).fieldsGrouping(REDUCE_BOLT, new Fields("command"));
 

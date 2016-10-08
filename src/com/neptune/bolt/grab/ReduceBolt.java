@@ -9,7 +9,6 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import com.google.gson.Gson;
 import com.neptune.config.grab.GrabCommand;
-import com.neptune.constant.LogPath;
 import com.neptune.util.LogWriter;
 
 import java.util.Map;
@@ -20,7 +19,7 @@ import java.util.Map;
  */
 public class ReduceBolt implements IRichBolt {
     private static final String TAG = "reduce-bolt";
-    private static String LOG_PATH = "/reduce-bolt.log";
+    private String logPath;
 
     private GrabCommand cmd;
     private OutputCollector collector;
@@ -28,9 +27,9 @@ public class ReduceBolt implements IRichBolt {
 
     private int id;
 
-    public ReduceBolt() {
+    public ReduceBolt(String logPath) {
         super();
-        LOG_PATH = LogPath.PATH + "/reduce-bolt.log";
+        this.logPath = logPath;
     }
 
     @Override
@@ -38,7 +37,7 @@ public class ReduceBolt implements IRichBolt {
         this.context = topologyContext;
         this.collector = outputCollector;
         id = context.getThisTaskId();
-        LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ": prepared");
+        LogWriter.writeLog(logPath, TAG + "@" + id + ": prepared");
     }
 
     @Override
@@ -50,7 +49,7 @@ public class ReduceBolt implements IRichBolt {
 
         if (cmd != null) {
             collector.emit(new Values(cmd));
-            LogWriter.writeLog(LOG_PATH, TAG + "@" + id + ":Reduce command :" + json);
+            LogWriter.writeLog(logPath, TAG + "@" + id + ":Reduce command :" + json);
         }
 
         collector.ack(tuple);

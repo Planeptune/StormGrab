@@ -12,12 +12,21 @@ import java.util.*;
 public class Analyze {
     private static List<CaculateInfo> list = new ArrayList<>();
     public static int bufferLimit = 0;//缓冲区上限
+    public static int timeLimit = 1000;//等待时间上限
+    private static long lastTime = -1;
+
+    //TODO 载入库
+    /*static{
+        System.loadLibrary("");
+    }*/
 
     //压入缓冲区，如果缓冲区满则进行识别并返回识别结果，否则返回null
     public static List<AnalyzeResult> append(CaculateInfo info) {
         list.add(info);
+        if (lastTime == -1)
+            lastTime = System.currentTimeMillis();
         //缓冲区已满
-        if (list.size() >= bufferLimit) {
+        if (list.size() >= bufferLimit || System.currentTimeMillis() - lastTime >= timeLimit) {
             Map<String, Float> map = analyze(list);
             List<AnalyzeResult> result = new ArrayList<>();
             Map<String, CaculateInfo> temp = new HashMap<>();
@@ -36,9 +45,12 @@ public class Analyze {
                 result.add(re);
             }
             list.clear();
+            lastTime = System.currentTimeMillis();
             return result;
-        } else
+        } else {
+            lastTime = System.currentTimeMillis();
             return null;
+        }
     }
 
     //TODO 调用外部库
@@ -51,4 +63,6 @@ public class Analyze {
         }
         return map;
     }
+
+    //private static native Map<String,Float> analyze(List<CaculateInfo> infos);
 }

@@ -92,8 +92,6 @@ public class KafkaHighLevelConsumer {
                     minterface.dealWithData(element.value());// 处理方法应实现MethodInterface接口
                 }
                 consumer.commitSync();// 提交确认信息，阻塞式的更新offset
-                // TODO 测试语句，可删除
-                // System.out.println(getCommittedOffset());
                 buffer.clear();
             }
             // System.out.println("end of while");
