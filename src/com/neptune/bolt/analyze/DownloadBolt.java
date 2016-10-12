@@ -63,7 +63,7 @@ public class DownloadBolt extends BaseRichBolt {
                 BufferedImage img = ImageIO.read(in);
                 byte[] pixels = ((DataBufferByte) img.getRaster().getDataBuffer()).getData();
                 CaculateInfo info = new CaculateInfo(key.url, pixels, img.getWidth(), img.getHeight(), key.time_stamp);
-                collector.emit(new Values(info));
+                collector.emit(new Values(info, key.video_id));
                 LogWriter.writeLog(logPath, TAG + "@" + id + ": download image from :" + key.url);
             } catch (IOException e) {
                 LogWriter.writeLog(logPath, TAG + "@" + id + ": " + e.getMessage());
@@ -76,6 +76,6 @@ public class DownloadBolt extends BaseRichBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
-        outputFieldsDeclarer.declare(new Fields("CaculateInfo"));
+        outputFieldsDeclarer.declare(new Fields("CaculateInfo", "videoID"));
     }
 }

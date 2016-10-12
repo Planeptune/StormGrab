@@ -15,10 +15,9 @@ public class Analyze {
     public static int timeLimit = 1000;//等待时间上限
     private static long lastTime = -1;
 
-    //TODO 载入库
-    /*static{
-        System.loadLibrary("");
-    }*/
+    static {
+        //System.loadLibrary("");
+    }
 
     //压入缓冲区，如果缓冲区满则进行识别并返回识别结果，否则返回null
     public static List<AnalyzeResult> append(CaculateInfo info) {
@@ -27,7 +26,7 @@ public class Analyze {
             lastTime = System.currentTimeMillis();
         //缓冲区已满
         if (list.size() >= bufferLimit || System.currentTimeMillis() - lastTime >= timeLimit) {
-            Map<String, Float> map = analyze(list);
+            Map<String, float[]> map = analyze(list);
             List<AnalyzeResult> result = new ArrayList<>();
             Map<String, CaculateInfo> temp = new HashMap<>();
 
@@ -37,11 +36,11 @@ public class Analyze {
             }
 
             //根据返回的每条记录中的key，从哈希表中寻找对应的时间戳，并生成AnalyzeInfo
-            for (Map.Entry<String, Float> entry : map.entrySet()) {
+            for (Map.Entry<String, float[]> entry : map.entrySet()) {
                 AnalyzeResult re = new AnalyzeResult();
-                re.key = entry.getKey();
+                //re.key = entry.getKey();
                 re.features = entry.getValue();
-                re.timestamp = temp.get(re.key).time_stamp;
+                re.info = temp.get(entry.getKey());
                 result.add(re);
             }
             list.clear();
@@ -53,8 +52,7 @@ public class Analyze {
         }
     }
 
-    //TODO 调用外部库
-    private static Map<String, Float> analyze(List<CaculateInfo> infos) {
+    /*private static Map<String, Float> analyze(List<CaculateInfo> infos) {
         Map<String, Float> map = new HashMap<>();
         Random ra = new Random();
         for (CaculateInfo info : infos) {
@@ -62,7 +60,13 @@ public class Analyze {
             map.put(info.key, s);
         }
         return map;
-    }
+    }*/
 
-    //private static native Map<String,Float> analyze(List<CaculateInfo> infos);
+    //本地方法，输入一个CaculateInfo的列表，返回每个文件地址与特征值的哈希表
+    private static native Map<String, float[]> analyze(List<CaculateInfo> infos);
+
+    @Deprecated
+    public static void main(String[] args) {
+
+    }
 }

@@ -7,7 +7,6 @@ import java.io.Serializable;
  * 图片分析的结果
  */
 public class AnalyzeResult implements Serializable {
-    public String key;//图片url
-    public String timestamp;//图片时间戳
-    public float features;//特征值
+    public CaculateInfo info;
+    public float[] features;//特征值
 }

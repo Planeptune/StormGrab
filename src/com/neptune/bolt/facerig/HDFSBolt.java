@@ -54,8 +54,7 @@ public class HDFSBolt extends BaseRichBolt {
         hdfs = new HDFSHelper(null);
         File f = new File(path);
         hdfs.upload(f, key.url);
-        //TODO 测试完成后恢复该语句
-        //f.delete();
+        f.delete();
 
         collector.emit(new Values(gson.toJson(key)));
         LogWriter.writeLog(logPath, TAG + "@" + id + ": upload to hdfs :" + key.url);

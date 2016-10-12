@@ -8,11 +8,11 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 
 /**
  * Created by neptune on 16-9-12.
- * 向redis发出消息
+ * 未封装的redis工具，向channel发出一条消息
  */
 public class VideoNotifierImpl implements IVideoNotifier {
     private final static String TAG = "PictureNotifierImpl";
-    private final static String LOG_PATH = "video-notifier.log";
+    private final static String LOG_PATH = "/home/neptune/logs/redis.log";
 
     private Jedis mJedis;
     private String host;
@@ -32,6 +32,7 @@ public class VideoNotifierImpl implements IVideoNotifier {
         //mLogger = new FileLogger("redis");
     }
 
+    //初始化Jedis
     private void initJedis() {
         if (mJedis != null)
             return;
@@ -47,14 +48,17 @@ public class VideoNotifierImpl implements IVideoNotifier {
         }
     }
 
+    //初始化Jedis
     public void prepare() {
         initJedis();
     }
 
+    //获取Jedis
     public Jedis getJedis() {
         return mJedis;
     }
 
+    //向redis发送消息，redis可以将消息推送给订阅者
     public void notify(String msg) {
         if (mJedis == null) {
             initJedis();
@@ -72,11 +76,12 @@ public class VideoNotifierImpl implements IVideoNotifier {
         }
     }
 
+    //关闭redis的连接
     public void stop() {
         if (mJedis != null) {
             mJedis.close();
             mJedis = null;
-            LogWriter.writeLog(LOG_PATH, TAG + " close redis");
+            //LogWriter.writeLog(LOG_PATH, TAG + " close redis");
         }
     }
 }

@@ -8,11 +8,10 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import com.neptune.api.Facerig;
-import com.neptune.config.facerig.CaculatePicture;
+import com.neptune.config.analyze.CaculateInfo;
 import com.neptune.config.facerig.PictureKey;
 import com.neptune.util.LogWriter;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -42,18 +41,16 @@ public class FacerigBolt extends BaseRichBolt {
 
     @Override
     public void execute(Tuple tuple) {
-        CaculatePicture cal = (CaculatePicture) tuple.getValueByField("CaculateInfo");
+        CaculateInfo cal = (CaculateInfo) tuple.getValueByField("CaculateInfo");
         PictureKey key = (PictureKey) tuple.getValueByField("PictureKey");
 
         //将图片进行人脸分离
         List<String> paths = Facerig.facerig(cal);
-        int i = 0;
         for (String path : paths) {
-            File f = new File(path);
             collector.emit(new Values(path, key));
         }
 
-        LogWriter.writeLog(logPath, TAG + "@" + id + ": seperate image at :" + cal.url);
+        LogWriter.writeLog(logPath, TAG + "@" + id + ": seperate image at :" + cal.key);
 
         //collector.emit(new Values(list));
 

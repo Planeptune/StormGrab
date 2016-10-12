@@ -1,8 +1,7 @@
 package com.neptune.api;
 
-import com.neptune.config.facerig.CaculatePicture;
+import com.neptune.config.analyze.CaculateInfo;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -11,15 +10,15 @@ import java.util.List;
  */
 public class Facerig {
 
-    //TODO 载入库
-    /*static{
-        System.loadLibrary("");
-    }*/
-
-    //返回值是本地文件的路径
-    public static List<String> facerig(CaculatePicture info) {
-        return Arrays.asList("/home/neptune/src.png");
+    static {
+        //System.loadLibrary("facerig");
     }
 
-    //public static native List<String> facerig(CaculatePicture info);
+    //本地方法，输入是一张图的CaculateInfo，输出是一个本地文件列表
+    public static native List<String> facerig(CaculateInfo info);
+
+    @Deprecated
+    public static void main(String[] args) {
+
+    }
 }

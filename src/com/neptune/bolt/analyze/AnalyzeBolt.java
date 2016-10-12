@@ -4,7 +4,9 @@ import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.topology.base.BaseRichBolt;
+import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
+import backtype.storm.tuple.Values;
 import com.neptune.api.Analyze;
 import com.neptune.config.analyze.AnalyzeResult;
 import com.neptune.config.analyze.CaculateInfo;
@@ -40,18 +42,22 @@ public class AnalyzeBolt extends BaseRichBolt {
 
     @Override
     public void execute(Tuple tuple) {
-        CaculateInfo info = (CaculateInfo) tuple.getValue(0);
+        CaculateInfo info = (CaculateInfo) tuple.getValueByField("CaculateInfo");
+        String videoID = tuple.getStringByField("videoID");
         List<AnalyzeResult> list = Analyze.append(info);
         if (list == null) {
             LogWriter.writeLog(logPath, TAG + "@" + id + ": append image at :" + info.key);
         } else {
-            //TODO 对识别结果的后续处理
+            for (AnalyzeResult re : list) {
+                collector.emit(new Values(re, videoID));
+                LogWriter.writeLog(logPath, TAG + "@" + id + ": recognized face feature: " + re.features);
+            }
         }
         collector.ack(tuple);
     }
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
-
+        outputFieldsDeclarer.declare(new Fields("AnalyzeResult", "videoID"));
     }
 }

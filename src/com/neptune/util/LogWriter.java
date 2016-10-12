@@ -12,9 +12,9 @@ import java.util.Calendar;
 public class LogWriter {
     public static void writeLog(String filePath, String log) {
         String path = filePath;
-        //文件名为空则使用默认值
+        //文件名为空则表示不输出测试信息
         if (filePath == null)
-            path = "default_log.log";
+            return;
 
         File f = new File(path);
         if (!f.exists())

@@ -35,5 +35,5 @@ public class GrabConfig implements Serializable {
 
     public int workerNum = 1;//worker进程数量
 
-    public String logPath = "";//日志存放目录
+    public String logPath;//日志存放目录
 }

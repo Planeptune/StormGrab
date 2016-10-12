@@ -22,7 +22,8 @@ import java.lang.management.ManagementFactory;
 
 /**
  * Created by neptune on 16-9-12.
- * 用于抓帧的子进程，可用性尚未测试，建议暂不使用，留到最后检查
+ * 用于抓帧的子进程，修改后可用性尚未测试
+ * 已经带有上传hdfs和发送kafka消息的功能
  */
 public class GrabThread extends Thread {
     private final static String TAG = "Grab";
@@ -475,9 +476,8 @@ public class GrabThread extends Thread {
         String name = ManagementFactory.getRuntimeMXBean().getName();
         String pid = name.split("@")[0];
 
-        //FileLogger logger = new FileLogger("GrabThread@" + pid);
-
         //this notifier is not needed
+        //?
         IVideoNotifier notifier = new VideoNotifierImpl(
                 host, port,
                 password, new String[]{url});

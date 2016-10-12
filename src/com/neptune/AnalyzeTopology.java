@@ -10,6 +10,8 @@ import com.google.gson.Gson;
 import com.neptune.api.Analyze;
 import com.neptune.bolt.analyze.AnalyzeBolt;
 import com.neptune.bolt.analyze.DownloadBolt;
+import com.neptune.bolt.analyze.QueryBolt;
+import com.neptune.bolt.analyze.RecordBolt;
 import com.neptune.config.analyze.AnalyzeConfig;
 import com.neptune.util.FileTools;
 import com.neptune.util.LogWriter;
@@ -30,6 +32,8 @@ public class AnalyzeTopology {
     private static final String KAFKA_SPOUT = "kafka-spout";
     private static final String DOWNLOAD_BOLT = "download-bolt";
     private static final String ANALYZE_BOLT = "analyze-bolt";
+    private static final String QUERY_BOLT = "query-bolt";
+    private static final String RECORD_BOLT = "record-bolt";
 
     public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException {
         AnalyzeConfig config;
@@ -68,6 +72,10 @@ public class AnalyzeTopology {
                 config.downloadParallel).shuffleGrouping(KAFKA_SPOUT);
         builder.setBolt(ANALYZE_BOLT, new AnalyzeBolt(config.logPath + "/analyze-bolt.log"),
                 config.analyzeParallel).shuffleGrouping(DOWNLOAD_BOLT);
+        builder.setBolt(QUERY_BOLT, new QueryBolt(config.redisHost, config.redisPassword, config.redisChannels, config.logPath + "/query-bolt.log"),
+                config.queryParallel).shuffleGrouping(ANALYZE_BOLT);
+        builder.setBolt(RECORD_BOLT, new RecordBolt(config.zks.split(":")[0], Integer.valueOf(config.zks.split(":")[1]), config.tableName, config.logPath + "/record-bolt.log"),
+                config.recordParallel).shuffleGrouping(QUERY_BOLT);
 
         //提交topology
         Config tconfig = new Config();

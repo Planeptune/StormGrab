@@ -8,7 +8,7 @@ import java.io.Serializable;
  */
 public class FacerigConfig implements Serializable {
 
-    public String logPath = "";//日志文件存放目录
+    public String logPath;//日志文件存放目录
 
     public int spoutParallel = 1;//spout的并行度
     public int pretreatParallel = 1;//预处理图片的bolt的并行度

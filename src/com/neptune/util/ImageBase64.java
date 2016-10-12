@@ -12,6 +12,7 @@ import java.io.*;
  * Created by neptune on 16-9-13.
  * 使用Base64编解码图片的工具集
  */
+@Deprecated
 public class ImageBase64 {
 
     //图片编码
@@ -84,18 +85,17 @@ public class ImageBase64 {
     }
 
     //将bufferedimage编码
-    public static String encoding(BufferedImage img)
-    {
+    public static String encoding(BufferedImage img) {
         try {
-            ByteArrayOutputStream bao=new ByteArrayOutputStream();
-            ImageOutputStream io=ImageIO.createImageOutputStream(bao);
-            ImageIO.write(img,"png",io);
-            InputStream in=new ByteArrayInputStream(bao.toByteArray());
-            byte[] data=new byte[in.available()];
+            ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            ImageOutputStream io = ImageIO.createImageOutputStream(bao);
+            ImageIO.write(img, "png", io);
+            InputStream in = new ByteArrayInputStream(bao.toByteArray());
+            byte[] data = new byte[in.available()];
             in.read(data);
             in.close();
 
-            BASE64Encoder encoder=new BASE64Encoder();
+            BASE64Encoder encoder = new BASE64Encoder();
             return encoder.encode(data);
         } catch (IOException e) {
             return null;

@@ -14,7 +14,7 @@ public class CaculateInfo implements Serializable {
     public String time_stamp;
 
     public CaculateInfo() {
-        super();
+
     }
 
     public CaculateInfo(String key, byte[] pixel, int width, int height, String time_stamp) {

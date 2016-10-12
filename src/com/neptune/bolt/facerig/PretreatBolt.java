@@ -8,7 +8,7 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import com.google.gson.Gson;
-import com.neptune.config.facerig.CaculatePicture;
+import com.neptune.config.analyze.CaculateInfo;
 import com.neptune.config.facerig.PictureKey;
 import com.neptune.util.HDFSHelper;
 import com.neptune.util.ImageHelper;
@@ -79,7 +79,7 @@ public class PretreatBolt extends BaseRichBolt {
                     img = ImageHelper.resize(img, width, height);
                     //编码发送，采用与鉴黄项目相同的接口
                     byte[] value = ((DataBufferByte) img.getRaster().getDataBuffer()).getData();
-                    CaculatePicture cal = new CaculatePicture(key.url, value, width, height);
+                    CaculateInfo cal = new CaculateInfo(key.url, value, width, height, key.time_stamp);
                     collector.emit(new Values(cal, key));
                     LogWriter.writeLog(logPath, TAG + "@" + id + ": Reduce command :" + json);
                 } else
