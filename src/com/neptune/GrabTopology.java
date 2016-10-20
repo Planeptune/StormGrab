@@ -9,17 +9,22 @@ import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.tuple.Fields;
 import com.google.gson.Gson;
 import com.neptune.bolt.grab.GrabBolt;
+import com.neptune.bolt.grab.NativeGrabBolt;
 import com.neptune.bolt.grab.ReduceBolt;
+import com.neptune.bolt.grab.UploadBolt;
 import com.neptune.config.grab.GrabConfig;
 import com.neptune.tool.Grabber;
 import com.neptune.tool.VideoGrabber;
 import com.neptune.util.FileTools;
 import com.neptune.util.LogWriter;
 import storm.kafka.*;
+import storm.kafka.bolt.KafkaBolt;
+import storm.kafka.trident.TridentKafkaState;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Properties;
 
 /**
  * Created by neptune on 16-9-9.
@@ -30,6 +35,8 @@ public class GrabTopology {
     public static final String KAFKA_SPOUT = "kafka-spout";
     public static final String REDUCE_BOLT = "reduce-bolt";
     public static final String GRAB_BOLT = "grab-bolt";
+    public static final String UPLOAD_BOLT = "upload-bolt";
+    public static final String KAFKA_BOLT = "kafka-bolt";
     private static String LOG_PATH = "/grab-topology.log";
 
     public static void main(String[] args) throws AlreadyAliveException, InvalidTopologyException {
@@ -53,7 +60,6 @@ public class GrabTopology {
 
         //设置日志文件路径
         LOG_PATH = config.logPath + "/grab-topology.log";
-        GrabThread.logPath = config.logPath + "/grab-thread.log";
         LogWriter.writeLog(LOG_PATH, TAG + ":Read config from " + configFile);
 
         //设置kafkaSpout的选项
@@ -64,21 +70,29 @@ public class GrabTopology {
         sconfig.zkPort = config.zkPort;
         sconfig.forceFromStart = false;
 
-        //截图进程
-        Grabber grabber = new VideoGrabber(config.cmd, config.nameFormat, config.frameRate);
-
         //构建topology
         TopologyBuilder builder = new TopologyBuilder();
         builder.setSpout(KAFKA_SPOUT, new KafkaSpout(sconfig), config.spoutParallel);
-        builder.setBolt(REDUCE_BOLT, new ReduceBolt(config.logPath + "/reduce-bolt.log"), config.reduceParallel).shuffleGrouping(KAFKA_SPOUT);
-        GrabBolt grabBolt = new GrabBolt(grabber, config.processLimit / config.grabParallel, config.sendTopic, config.brokerList, config.logPath + "/grab-bolt.log");
-        grabBolt.setRedis(config.redisHost, config.redisPort, config.redisPassword);
-        builder.setBolt(GRAB_BOLT, grabBolt, config.grabParallel).fieldsGrouping(REDUCE_BOLT, new Fields("command"));
+        builder.setBolt(REDUCE_BOLT, new ReduceBolt(config.logPath + "/reduce-bolt.log"),
+                config.reduceParallel).shuffleGrouping(KAFKA_SPOUT);
+        builder.setBolt(GRAB_BOLT, new NativeGrabBolt(config.logPath + "/grab-bolt.log", config.libPath),
+                config.grabParallel).shuffleGrouping(REDUCE_BOLT);
+        builder.setBolt(UPLOAD_BOLT, new UploadBolt(config.hdfsDir, config.logPath + "/upload-bolt"),
+                config.uploadParallel).shuffleGrouping(GRAB_BOLT);
+        builder.setBolt(KAFKA_BOLT, new KafkaBolt<String, String>(),
+                config.kafkaParallel).shuffleGrouping(UPLOAD_BOLT);
 
         //提交topology
         Config tconfig = new Config();
         tconfig.setNumWorkers(config.workerNum);
         tconfig.setDebug(false);
+        Properties pro = new Properties();
+        pro.put("metadata.broker.list", config.brokerList);
+        pro.put("producer.type", "async");
+        pro.put("request.required.acks", "0");
+        pro.put("serializer.class", "kafka.serializer.StringEncoder");
+        tconfig.put(TridentKafkaState.KAFKA_BROKER_PROPERTIES, pro);
+        tconfig.put("topic", config.sendTopic);
         StormSubmitter.submitTopology(args[1], tconfig, builder.createTopology());
     }
 }

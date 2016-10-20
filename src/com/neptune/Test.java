@@ -1,26 +1,17 @@
 package com.neptune;
 
-import com.google.gson.Gson;
-import com.neptune.config.facerig.PictureKey;
-import com.neptune.kafka.KafkaNewProducer;
+import com.neptune.api.Grab;
 
 /**
- * Created by neptune on 16-9-18.
+ * Created by neptune on 16-10-20.
  */
 public class Test {
-    public static void main(String[] args) throws Exception {
-        KafkaNewProducer p = new KafkaNewProducer("localhost:9092");
-        PictureKey key = new PictureKey();
-        key.dir = "hdfs://hadoop01:9000/test";
-        key.url = "hdfs://hadoop01:9000/test/src.png";
-        key.time_stamp = String.valueOf(System.currentTimeMillis());
-        key.video_id = "test";
-        Gson gson = new Gson();
-        String json = gson.toJson(key);
-        while (true) {
-            p.send("test-source-topic", json);
-            System.out.println(json);
-            Thread.sleep(1000);
-        }
+    public static void main(String[] args) {
+        Grab.load("/home/neptune/下载/libgrab.so");
+        System.out.println("load");
+        Grab.initCapture(0);
+        System.out.println("init");
+        Grab.quitCapture();
+        System.out.println("quit");
     }
 }

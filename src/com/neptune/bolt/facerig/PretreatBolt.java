@@ -17,10 +17,7 @@ import com.neptune.util.LogWriter;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Map;
 
 /**
@@ -59,8 +56,10 @@ public class PretreatBolt extends BaseRichBolt {
         String json = tuple.getString(0);
         Gson gson = new Gson();
         PictureKey key = gson.fromJson(json, PictureKey.class);
+        //String localPath = tuple.getString(0);
 
         if (key != null) {
+            //File f = new File(localPath);
             //下载图片
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             BufferedImage img = null;

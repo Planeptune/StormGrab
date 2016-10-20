@@ -57,11 +57,10 @@ public class QueryBolt extends BaseRichBolt {
         int id;
 
         id = Recognize.recognize(result.features);
-        if (id == -1) {
-            //TODO 操作redis
-        } else {
-            collector.emit(new Values(result, videoID));
+        if (id != -1) {
+            redis.publish("Find people in blacklist,ID: " + id, channels);
         }
+        collector.emit(new Values(result, videoID));
         collector.ack(tuple);
     }
 

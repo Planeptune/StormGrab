@@ -1,11 +1,25 @@
 package com.neptune.api;
 
+import com.neptune.config.analyze.CaculateInfo;
+
 /**
  * Created by neptune on 16-10-10.
  */
 public class Grab {
-    //本地方法，抓帧程序
-    public static native void capture(int video_id, int sec);
+
+    //必须先执行该方法才能使用其他方法
+    public static void load(String libPath) {
+        System.load(libPath);
+    }
+
+    //本地方法，初始化抓帧，参数暂时不用
+    public static native void initCapture(int mode);
+
+    //本地方法，抓帧程序，返回结果存在info中
+    public static native void grabCapture(int video_id, int sec, CaculateInfo info);
+
+    //本地方法，结束抓帧
+    public static native void quitCapture();
 
     public static void main(String[] args) {
 
