@@ -6,29 +6,22 @@ import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.spout.SchemeAsMultiScheme;
 import backtype.storm.topology.TopologyBuilder;
-import backtype.storm.tuple.Fields;
 import com.google.gson.Gson;
-import com.neptune.bolt.grab.GrabBolt;
 import com.neptune.bolt.grab.NativeGrabBolt;
 import com.neptune.bolt.grab.ReduceBolt;
+import com.neptune.bolt.grab.SendBolt;
 import com.neptune.bolt.grab.UploadBolt;
 import com.neptune.config.grab.GrabConfig;
-import com.neptune.tool.Grabber;
-import com.neptune.tool.VideoGrabber;
 import com.neptune.util.FileTools;
 import com.neptune.util.LogWriter;
 import storm.kafka.*;
-import storm.kafka.bolt.KafkaBolt;
-import storm.kafka.trident.TridentKafkaState;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Properties;
 
 /**
- * Created by neptune on 16-9-9.
- * 程序入口，生成并提交topology
+ * Created by neptune on 16-10-25.
  */
 public class GrabTopology {
     public static final String TAG = "grab-topology";
@@ -63,8 +56,8 @@ public class GrabTopology {
         LogWriter.writeLog(LOG_PATH, TAG + ":Read config from " + configFile);
 
         //设置kafkaSpout的选项
-        BrokerHosts brokerHosts = new ZkHosts(config.zks);
-        SpoutConfig sconfig = new SpoutConfig(brokerHosts, config.topic, config.zkRoot, config.id);
+        BrokerHosts brokers = new ZkHosts(config.zks);
+        SpoutConfig sconfig = new SpoutConfig(brokers, config.topic, config.zkRoot, config.id);
         sconfig.scheme = new SchemeAsMultiScheme(new StringScheme());
         sconfig.zkServers = Arrays.asList(config.zkServers);
         sconfig.zkPort = config.zkPort;
@@ -77,22 +70,24 @@ public class GrabTopology {
                 config.reduceParallel).shuffleGrouping(KAFKA_SPOUT);
         builder.setBolt(GRAB_BOLT, new NativeGrabBolt(config.logPath + "/grab-bolt.log", config.libPath),
                 config.grabParallel).shuffleGrouping(REDUCE_BOLT);
-        builder.setBolt(UPLOAD_BOLT, new UploadBolt(config.hdfsDir, config.logPath + "/upload-bolt"),
+        builder.setBolt(UPLOAD_BOLT, new UploadBolt(config.hdfsDir, config.logPath + "/upload-bolt.log"),
                 config.uploadParallel).shuffleGrouping(GRAB_BOLT);
-        builder.setBolt(KAFKA_BOLT, new KafkaBolt<String, String>(),
+        /*builder.setBolt(KAFKA_BOLT, new KafkaBolt<String, String>(),
+                config.kafkaParallel).shuffleGrouping(UPLOAD_BOLT);*/
+        builder.setBolt(KAFKA_BOLT, new SendBolt(config.brokerList, config.sendTopic, config.logPath + "/send-bolt.log"),
                 config.kafkaParallel).shuffleGrouping(UPLOAD_BOLT);
 
         //提交topology
         Config tconfig = new Config();
         tconfig.setNumWorkers(config.workerNum);
         tconfig.setDebug(false);
-        Properties pro = new Properties();
+        /*Properties pro = new Properties();
         pro.put("metadata.broker.list", config.brokerList);
         pro.put("producer.type", "async");
         pro.put("request.required.acks", "0");
         pro.put("serializer.class", "kafka.serializer.StringEncoder");
         tconfig.put(TridentKafkaState.KAFKA_BROKER_PROPERTIES, pro);
-        tconfig.put("topic", config.sendTopic);
+        tconfig.put("topic", config.sendTopic);*/
         StormSubmitter.submitTopology(args[1], tconfig, builder.createTopology());
     }
 }

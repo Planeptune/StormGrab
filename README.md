@@ -1,5 +1,5 @@
 **将lib.tar.gz解压后，覆盖storm根目录下的lib目录**
-
+**待更新**
 #*提交抓取视频帧的topology的方法：*
 进入$STORM_HOME/bin目录，执行:*storm jar /home/neptune/Grab/StormGrab.jar com.neptune.GrabTopology /home/neptune/Grab/grab_config.json topology-name*
 其中的路径换成两个文件的实际路径，topology-name为拓扑名称，可随意起名

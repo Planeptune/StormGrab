@@ -9,6 +9,7 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 import com.google.gson.Gson;
 import com.neptune.config.facerig.PictureKey;
+import com.neptune.kafka.KafkaNewProducer;
 import com.neptune.util.HDFSHelper;
 import com.neptune.util.LogWriter;
 

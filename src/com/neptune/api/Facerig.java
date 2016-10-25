@@ -6,7 +6,7 @@ import java.util.List;
 
 /**
  * Created by neptune on 16-9-13.
- * 人脸提取接口（假定）
+ * 人脸提取接口
  */
 public class Facerig {
 

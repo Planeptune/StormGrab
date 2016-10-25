@@ -4,6 +4,7 @@ import com.neptune.config.analyze.CaculateInfo;
 
 /**
  * Created by neptune on 16-10-10.
+ * 图片抓取，具体实现由库实现
  */
 public class Grab {
 

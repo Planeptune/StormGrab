@@ -41,7 +41,7 @@ public class NativeGrabBolt extends BaseRichBolt {
         context = topologyContext;
         id = context.getThisTaskId();
         Grab.load(libPath);
-        LogWriter.writeLog(logPath, TAG + "@" + id + " has load the library");
+        LogWriter.writeLog(logPath, TAG + "@" + id + " has load the library from : " + libPath);
         Grab.initCapture(0);
         LogWriter.writeLog(logPath, TAG + "@" + id + ": prepared");
     }
