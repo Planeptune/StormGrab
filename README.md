@@ -1,5 +1,5 @@
 **将lib.tar.gz解压后，覆盖storm根目录下的lib目录**
-**待更新**
+**本工程在jdk1.8.0_102环境下完成**
 #*提交抓取视频帧的topology的方法：*
 进入$STORM_HOME/bin目录，执行:*storm jar /home/neptune/Grab/StormGrab.jar com.neptune.GrabTopology /home/neptune/Grab/grab_config.json topology-name*
 其中的路径换成两个文件的实际路径，topology-name为拓扑名称，可随意起名
@@ -74,3 +74,14 @@
 - tableName	String，记录数据的hbase表名；
 - analyzeLibPath	String，人脸特征提取的动态库的绝对路径
 - recognizeLibPath	String，黑名单查找的动态库的绝对路径
+
+#*对maven使用者的一点帮助*
+本工程大致用到了以下这些依赖：
+gson 3.0
+kafka 0.10.0
+storm 0.9.6
+jedis
+hadoop 2.6.4
+hbase 1.0.3
+
+*将topology提交到storm运行时，务必将以上依赖库全部放进storm根目录下的lib/内*
