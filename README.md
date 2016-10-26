@@ -77,11 +77,11 @@
 
 #*对maven使用者的一点帮助*
 本工程大致用到了以下这些依赖：
-gson 3.0
-kafka 0.10.0
-storm 0.9.6
-jedis
-hadoop 2.6.4
-hbase 1.0.3
+- gson 3.0
+- kafka 0.10.0
+- storm 0.9.6
+- jedis
+- hadoop 2.6.4
+- hbase 1.0.3
 
 *将topology提交到storm运行时，务必将以上依赖库全部放进storm根目录下的lib/内*
