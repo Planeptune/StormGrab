@@ -28,7 +28,7 @@ public class NativeGrabBolt extends BaseRichBolt {
     private int id;
 
     private Map<Integer, Thread> threadList = new HashMap<>();
-    private String libPath;
+    private String libPath;//so文件的绝对路径
 
     public NativeGrabBolt(String logPath, String libPath) {
         this.logPath = logPath;

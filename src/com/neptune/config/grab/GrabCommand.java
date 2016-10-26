@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 /**
  * Created by neptune on 16-9-8.
- * 对视频截图的指令信息
+ * 上游控制端发送来的指令（假定为该格式）
  */
 public class GrabCommand implements Serializable {
     public String url;//视频地址

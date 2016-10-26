@@ -8,7 +8,7 @@ import java.io.Serializable;
  */
 public class FacerigConfig implements Serializable {
 
-    public String logPath;//日志文件存放目录
+    public String logPath = "";//日志文件存放目录
 
     public int spoutParallel = 1;//spout的并行度
     public int pretreatParallel = 1;//预处理图片的bolt的并行度
@@ -19,7 +19,7 @@ public class FacerigConfig implements Serializable {
     public String targetTopic = "facerig-topic";//kafka消息发送的目的topic
     public String bootstrap = "localhost:9092";//kafka集群地址
     public String id = "facerig-consumer";//kafka消费者分组名称
-    public String zkRoot = "/storm/facerig";//kafka存放消息的标识
+    public String zkRoot = "";//kafka存放消息的标识
     public String zks = "localhost:2181";//kafka需要的zookeeper集群地址
     public String[] zkServers = {"localhost"};//zookeeper集群地址
     public int zkPort = 2181;//zookeeper端口
@@ -29,6 +29,8 @@ public class FacerigConfig implements Serializable {
 
     public int height = 227;//图片高度
     public int width = 227;//图片宽度
+
+    public String libPath = "/usr/lib/libfacerig.so";//人脸提取的库文件绝对路径
 
     public int workerNum = 1;//工作进程数量
 }

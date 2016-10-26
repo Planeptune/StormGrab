@@ -70,9 +70,10 @@ public class AnalyzeTopology {
         builder.setSpout(KAFKA_SPOUT, new KafkaSpout(conf), config.spoutParallel);
         builder.setBolt(DOWNLOAD_BOLT, new DownloadBolt(config.logPath + "/download-bolt.log"),
                 config.downloadParallel).shuffleGrouping(KAFKA_SPOUT);
-        builder.setBolt(ANALYZE_BOLT, new AnalyzeBolt(config.logPath + "/analyze-bolt.log"),
+        builder.setBolt(ANALYZE_BOLT, new AnalyzeBolt(config.analyzeLibPath, config.logPath + "/analyze-bolt.log"),
                 config.analyzeParallel).shuffleGrouping(DOWNLOAD_BOLT);
-        builder.setBolt(QUERY_BOLT, new QueryBolt(config.redisHost, config.redisPassword, config.redisChannels, config.logPath + "/query-bolt.log"),
+        builder.setBolt(QUERY_BOLT, new QueryBolt(config.redisHost, config.redisPassword, config.redisChannels,
+                        config.recognizeLibPath, config.logPath + "/query-bolt.log"),
                 config.queryParallel).shuffleGrouping(ANALYZE_BOLT);
         builder.setBolt(RECORD_BOLT, new RecordBolt(config.zks.split(":")[0], Integer.valueOf(config.zks.split(":")[1]), config.tableName, config.logPath + "/record-bolt.log"),
                 config.recordParallel).shuffleGrouping(QUERY_BOLT);

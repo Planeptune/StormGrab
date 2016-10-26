@@ -15,8 +15,9 @@ public class Analyze {
     public static int timeLimit = 1000;//等待时间上限
     private static long lastTime = -1;
 
-    static {
-        //System.loadLibrary("");
+    //加载库，必须首先被执行
+    public static void load(String libPath) {
+        System.load(libPath);
     }
 
     //压入缓冲区，如果缓冲区满则进行识别并返回识别结果，否则返回null
@@ -51,16 +52,6 @@ public class Analyze {
             return null;
         }
     }
-
-    /*private static Map<String, Float> analyze(List<CaculateInfo> infos) {
-        Map<String, Float> map = new HashMap<>();
-        Random ra = new Random();
-        for (CaculateInfo info : infos) {
-            float s = ra.nextFloat();
-            map.put(info.key, s);
-        }
-        return map;
-    }*/
 
     //本地方法，输入一个CaculateInfo的列表，返回每个文件地址与特征值的哈希表
     private static native Map<String, float[]> analyze(List<CaculateInfo> infos);

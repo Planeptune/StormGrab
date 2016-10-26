@@ -33,12 +33,15 @@ public class QueryBolt extends BaseRichBolt {
     private String password;
     private String[] channels;
 
-    public QueryBolt(String host, String password, String[] channels, String logPath) {
+    private String libPath;
+
+    public QueryBolt(String host, String password, String[] channels, String libPath, String logPath) {
         super();
         this.logPath = logPath;
         this.host = host;
         this.password = password;
         this.channels = channels;
+        this.libPath = libPath;
     }
 
     @Override
@@ -47,6 +50,8 @@ public class QueryBolt extends BaseRichBolt {
         collector = outputCollector;
         id = context.getThisTaskId();
         redis = new RedisHelper(host, password);
+        Recognize.load(libPath);
+        LogWriter.writeLog(logPath, TAG + "@" + id + ": load library from: " + libPath);
         LogWriter.writeLog(logPath, TAG + "@" + id + ": prepared");
     }
 

@@ -17,7 +17,7 @@ import java.util.Map;
 
 /**
  * Created by neptune on 16-9-18.
- * 人脸识别的bolt
+ * 特征提取的bolt
  */
 public class AnalyzeBolt extends BaseRichBolt {
     private static final String TAG = "analyze-bolt";
@@ -27,9 +27,12 @@ public class AnalyzeBolt extends BaseRichBolt {
     private TopologyContext context;
     private int id;
 
-    public AnalyzeBolt(String logPath) {
+    private String libPath;//so文件的绝对路径
+
+    public AnalyzeBolt(String libPath, String logPath) {
         super();
         this.logPath = logPath;
+        this.libPath = libPath;
     }
 
     @Override
@@ -37,6 +40,8 @@ public class AnalyzeBolt extends BaseRichBolt {
         collector = outputCollector;
         context = topologyContext;
         id = context.getThisTaskId();
+        Analyze.load(libPath);
+        LogWriter.writeLog(logPath, TAG + "@" + id + ": load library from: " + libPath);
         LogWriter.writeLog(logPath, TAG + "@" + id + ": prepared");
     }
 

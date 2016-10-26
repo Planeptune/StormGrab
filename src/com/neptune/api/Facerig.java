@@ -10,8 +10,9 @@ import java.util.List;
  */
 public class Facerig {
 
-    static {
-        //System.loadLibrary("facerig");
+    //加载库，必须先执行该方法才能执行该类其他方法
+    public static void load(String libPath) {
+        System.load(libPath);
     }
 
     //本地方法，输入是一张图的CaculateInfo，输出是一个本地文件列表

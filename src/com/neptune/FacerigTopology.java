@@ -74,7 +74,7 @@ public class FacerigTopology {
         builder.setSpout(KAFKA_SPOUT, new KafkaSpout(conf), config.spoutParallel);
         builder.setBolt(PRETREAT_BOLT, new PretreatBolt(config.height, config.width, config.logPath + "/pretreat-bolt.log"),
                 config.pretreatParallel).shuffleGrouping(KAFKA_SPOUT);
-        builder.setBolt(FACERIG_BOLT, new FacerigBolt(config.logPath + "/facerig-bolt.log"),
+        builder.setBolt(FACERIG_BOLT, new FacerigBolt(config.libPath, config.logPath + "/facerig-bolt.log"),
                 config.facerigParallel).shuffleGrouping(PRETREAT_BOLT);
         builder.setBolt(HDFS_BOLT, new HDFSBolt(config.hdfsDir, config.logPath + "/hdfs-bolt.log"), config.hdfsParallel).shuffleGrouping(FACERIG_BOLT);
         builder.setBolt(KAFKA_BOLT, new KafkaBolt<String, String>(),

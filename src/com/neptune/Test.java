@@ -8,9 +8,6 @@ import com.neptune.config.analyze.CaculateInfo;
  */
 public class Test {
     public static void main(String[] args) {
-        //Grab.load("/home/neptune/Grab/lib/netsdk/libavnetsdk.so");
-        //Grab.load("/home/neptune/Grab/lib/netsdk/libdhdvr.so");
-        //Grab.load("/home/neptune/Grab/lib/netsdk/libdhnetsdk.so");
         Grab.load("/home/neptune/Grab/libcapdetect.so");
         System.out.println("load");
         Grab.initCapture(0);

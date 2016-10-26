@@ -17,6 +17,7 @@ import java.util.Map;
 
 /**
  * Created by neptune on 16-9-13.
+ * 人脸分离的bolt
  */
 public class FacerigBolt extends BaseRichBolt {
     private static final String TAG = "facerig-bolt";
@@ -26,9 +27,12 @@ public class FacerigBolt extends BaseRichBolt {
     private TopologyContext context;
     private int id;
 
-    public FacerigBolt(String logPath) {
+    private String libPath;//so文件的绝对路径
+
+    public FacerigBolt(String libPath, String logPath) {
         super();
         this.logPath = logPath;
+        this.libPath = libPath;
     }
 
     @Override
@@ -36,6 +40,8 @@ public class FacerigBolt extends BaseRichBolt {
         collector = outputCollector;
         context = topologyContext;
         id = context.getThisTaskId();
+        Facerig.load(libPath);
+        LogWriter.writeLog(logPath, TAG + "@" + id + ": load library from: " + libPath);
         LogWriter.writeLog(logPath, TAG + "@" + id + ": prepared!");
     }
 

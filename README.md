@@ -8,23 +8,20 @@
 - grabParallel	int，截图的Bolt并行度；
 - spoutParallel	int，Spout的并行度；
 - reduceParallel	int，还原GrabCommend对象的Bolt并行度；
-- processLimit	int，抓取视频帧的子进程数量上限；
-- cmd	String，启动子进程的命令；
-- nameFormat	String，截图命名格式；
-- frameRate	double，抓取帧率；
-- zkServers	String[]，zookeeper集群地址；
+- uploadParallel	int，上传截图的并行度；
+- kafkaParallel	int，发送消息的并行度；
+- libPath	String，动态库绝对路径；
+- zkServers	String[]，zookeeper集群地址,格式为host1,host2...；
 - zkPort	int，zookeeper端口；
-- zks	String，kafka需要的zookeeper地址，格式为host1:port,host2:port..."；
+- zks	String，kafka需要的zookeeper地址，格式为host1:port,host2:port...；
 - id	String，kafka消费者分组名称；
-- topic	String，消息来源的topic名称；
-- zkRoot	String，kafka存放消息的标识，根据zks填写，如果zks格式为host1:port,host2:port/>path，则填写"/path"，否则填写""；
+- topic	String，接受消息的topic名称；
+- zkRoot	String，kafka在zookeeper中存放消息的路径，普通情况下为""，不建议修改kafka在zookeeper中的默认路径；
 - sendTopic	String，将截图发送到指定的topic；
-- brokerList	String，kafka集群地址，用于发送；
-- redisHost	String，redis地址；
-- redisPort	int，redis端口；
-- redisPassword	String，redis密码；
-- workerNum	int，worker进程数量，影响负载与性能；
-- logPath	String，存放日志文件的目录，不设置表示不输出日志文件；
+- brokerList	String，kafka集群地址；
+- hdfsDir	String，保存截图的hdfs目录；
+- workerNum	int，worker进程数量；
+- logPath	String，日志存放目录；
 
 #*提交人脸提取的topology的方法：*
 进入$STORM_HOME/bin目录，执行:*storm jar /home/neptune/Grab/StormGrab.jar com.neptune.FacerigTopology /home/neptune/Grab/facerig_config.json topology-name*
@@ -48,6 +45,7 @@
 - hdfsDir	String,存放人脸图片的hdfs目录
 - height	int，图片高度；
 - width	int，图片宽度；
+- libPath	String，人脸提取的动态库的绝对路径
 - workerNum	int，工作进程数量；
 
 #*提交人脸识别的topology的方法：*
@@ -74,3 +72,5 @@
 - redisPassword	String，redis密码；
 - redisChannels	String[]，redis发布的channel名称；
 - tableName	String，记录数据的hbase表名；
+- analyzeLibPath	String，人脸特征提取的动态库的绝对路径
+- recognizeLibPath	String，黑名单查找的动态库的绝对路径

@@ -32,4 +32,7 @@ public class AnalyzeConfig {
     public String redisPassword = "";//redis密码
     public String[] redisChannels = {};//redis发布的channel名称
     public String tableName = "default-table";//记录数据的hbase表名
+
+    public String analyzeLibPath = "/usr/lib/libanalyze.so";//人脸特征提取的库文件绝对路径
+    public String recognizeLibPath = "/usr/lib/librecognize.so";//黑名单识别的库文件绝对路径
 }
