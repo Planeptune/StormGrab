@@ -28,11 +28,13 @@ public class FacerigBolt extends BaseRichBolt {
     private int id;
 
     private String libPath;//so文件的绝对路径
+    private String modelPath;
 
-    public FacerigBolt(String libPath, String logPath) {
+    public FacerigBolt(String libPath, String modelPath,String logPath) {
         super();
         this.logPath = logPath;
         this.libPath = libPath;
+        this.modelPath=modelPath;
     }
 
     @Override
@@ -42,6 +44,7 @@ public class FacerigBolt extends BaseRichBolt {
         id = context.getThisTaskId();
         Facerig.load(libPath);
         LogWriter.writeLog(logPath, TAG + "@" + id + ": load library from: " + libPath);
+        Facerig.initFacerig(modelPath);
         LogWriter.writeLog(logPath, TAG + "@" + id + ": prepared!");
     }
 
@@ -52,15 +55,24 @@ public class FacerigBolt extends BaseRichBolt {
 
         //将图片进行人脸分离
         List<String> paths = Facerig.facerig(cal);
-        for (String path : paths) {
-            collector.emit(new Values(path, key));
-        }
-
         LogWriter.writeLog(logPath, TAG + "@" + id + ": seperate image at :" + cal.key);
-
-        //collector.emit(new Values(list));
+        if(!paths.isEmpty())
+        {
+            for (String path : paths) {
+                collector.emit(new Values(path, key));
+                LogWriter.writeLog(logPath,TAG+"@"+id+": seperate a face at :"+path);
+            }
+        }
+        else
+            LogWriter.writeLog(logPath,TAG+"@"+id+": no face");
 
         collector.ack(tuple);
+    }
+
+    public void cleanup()
+    {
+        super.cleanup();
+        Facerig.quitFacerig();
     }
 
     @Override

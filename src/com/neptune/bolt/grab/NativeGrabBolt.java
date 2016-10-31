@@ -12,8 +12,12 @@ import com.neptune.config.analyze.CaculateInfo;
 import com.neptune.config.grab.NativeGrabCommand;
 import com.neptune.util.LogWriter;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * Created by neptune on 16-10-13.
@@ -40,9 +44,11 @@ public class NativeGrabBolt extends BaseRichBolt {
         collector = outputCollector;
         context = topologyContext;
         id = context.getThisTaskId();
+
+        LogWriter.writeLog(logPath, TAG + "@" + id + "start loading the library from : " + libPath);
         Grab.load(libPath);
         LogWriter.writeLog(logPath, TAG + "@" + id + " has load the library from : " + libPath);
-        Grab.initCapture(0);
+        Grab.initCapture(1);
         LogWriter.writeLog(logPath, TAG + "@" + id + ": prepared");
     }
 
@@ -57,6 +63,7 @@ public class NativeGrabBolt extends BaseRichBolt {
             GrabThread gt = new GrabThread(cmd.video_id, cmd.sec, collector, logPath);
             threadList.put(cmd.video_id, gt);
             gt.start();
+            LogWriter.writeLog(logPath,TAG+"@"+id+": "+cmd.video_id+" start grabbing");
         }
 
         collector.ack(tuple);
@@ -94,7 +101,7 @@ class GrabThread extends Thread {
     public void run() {
         while (true) {
             CaculateInfo info = new CaculateInfo();
-            Grab.grabCapture(videoID, sec, info);
+            Grab.grabCapture(0, 0, info);
             if (info.pixel.length == 0)
                 LogWriter.writeLog(logPath, "fail to grab a frame from : " + videoID);
             else

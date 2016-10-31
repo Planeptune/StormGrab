@@ -10,6 +10,7 @@ import com.google.gson.Gson;
 import com.neptune.bolt.facerig.FacerigBolt;
 import com.neptune.bolt.facerig.HDFSBolt;
 import com.neptune.bolt.facerig.PretreatBolt;
+import com.neptune.bolt.facerig.SendBolt;
 import com.neptune.config.facerig.FacerigConfig;
 import com.neptune.util.FileTools;
 import com.neptune.util.LogWriter;
@@ -74,23 +75,25 @@ public class FacerigTopology {
         builder.setSpout(KAFKA_SPOUT, new KafkaSpout(conf), config.spoutParallel);
         builder.setBolt(PRETREAT_BOLT, new PretreatBolt(config.height, config.width, config.logPath + "/pretreat-bolt.log"),
                 config.pretreatParallel).shuffleGrouping(KAFKA_SPOUT);
-        builder.setBolt(FACERIG_BOLT, new FacerigBolt(config.libPath, config.logPath + "/facerig-bolt.log"),
+        builder.setBolt(FACERIG_BOLT, new FacerigBolt(config.libPath, config.modelPath, config.logPath + "/facerig-bolt.log"),
                 config.facerigParallel).shuffleGrouping(PRETREAT_BOLT);
         builder.setBolt(HDFS_BOLT, new HDFSBolt(config.hdfsDir, config.logPath + "/hdfs-bolt.log"), config.hdfsParallel).shuffleGrouping(FACERIG_BOLT);
-        builder.setBolt(KAFKA_BOLT, new KafkaBolt<String, String>(),
+        /*builder.setBolt(KAFKA_BOLT, new KafkaBolt<String, String>(),
+                config.kafkaParallel).shuffleGrouping(HDFS_BOLT);*/
+        builder.setBolt(KAFKA_BOLT, new SendBolt(config.bootstrap, config.targetTopic, config.logPath + "/send-bolt.log"),
                 config.kafkaParallel).shuffleGrouping(HDFS_BOLT);
 
         //提交topology
         Config tconfig = new Config();
         tconfig.setNumWorkers(config.workerNum);
         tconfig.setDebug(false);
-        Properties pro = new Properties();
+        /*Properties pro = new Properties();
         pro.put("metadata.broker.list", config.bootstrap);
         pro.put("producer.type", "async");
         pro.put("request.required.acks", "0");
         pro.put("serializer.class", "kafka.serializer.StringEncoder");
         tconfig.put(TridentKafkaState.KAFKA_BROKER_PROPERTIES, pro);
-        tconfig.put("topic", config.targetTopic);
+        tconfig.put("topic", config.targetTopic);*/
         StormSubmitter.submitTopology(args[1], tconfig, builder.createTopology());
     }
 }

@@ -54,14 +54,24 @@ public class UploadBolt extends BaseRichBolt {
         Gson gson = new Gson();
         ByteArrayInputStream in = new ByteArrayInputStream(image);
 
-        hdfs.upload(in, hdfsDir + File.separator + timestamp + "_" + id + ".png");
-        PictureKey key = new PictureKey();
-        key.url = hdfsDir + File.separator + timestamp + "_" + id + ".png";
-        key.video_id = String.valueOf(vedioID);
-        key.time_stamp = timestamp;
-        String json = gson.toJson(key);
+        boolean flag=hdfs.upload(in, hdfsDir + File.separator + timestamp + "_" + id + ".jpg");
+        if(flag)
+        {
+            LogWriter.writeLog(logPath,TAG+"@"+id+": upload :"+hdfsDir + File.separator + timestamp + "_" + id + ".jpg");
 
-        collector.emit(new Values(json));
+            PictureKey key = new PictureKey();
+            key.url = hdfsDir + File.separator + timestamp + "_" + id + ".jpg";
+            key.video_id = String.valueOf(vedioID);
+            key.time_stamp = timestamp;
+            String json = gson.toJson(key);
+
+            collector.emit(new Values(json));
+        }
+        else
+        {
+            LogWriter.writeLog(logPath,TAG+"@"+id+": upload failed ,inputstream length: "+image.length);
+        }
+
         collector.ack(tuple);
     }
 

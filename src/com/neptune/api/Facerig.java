@@ -15,8 +15,12 @@ public class Facerig {
         System.load(libPath);
     }
 
+    public static native void initFacerig(String modelPath);
+
     //本地方法，输入是一张图的CaculateInfo，输出是一个本地文件列表
     public static native List<String> facerig(CaculateInfo info);
+
+    public static native void quitFacerig();
 
     @Deprecated
     public static void main(String[] args) {

@@ -15,7 +15,8 @@
 "hdfsDir":"hdfs://localhost:9000/facerig",
 "height":227,
 "width":227,
-"libPath":"",
+"libPath":"/home/neptune/Grab/libcapdetect.so",
+"modelPath":"/home/neptune/Grab",
 "logPath":"/home/neptune/logs/facerig",
 "workerNum":1
 }

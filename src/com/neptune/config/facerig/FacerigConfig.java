@@ -31,6 +31,7 @@ public class FacerigConfig implements Serializable {
     public int width = 227;//图片宽度
 
     public String libPath = "/usr/lib/libfacerig.so";//人脸提取的库文件绝对路径
+    public String modelPath="";//model文件夹所在的路径
 
     public int workerNum = 1;//工作进程数量
 }

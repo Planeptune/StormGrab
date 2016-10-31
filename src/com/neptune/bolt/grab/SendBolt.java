@@ -12,6 +12,7 @@ import java.util.Map;
 
 /**
  * Created by neptune on 16-10-25.
+ * 用于解决storm自带的kafkabolt出现的神秘错误
  */
 public class SendBolt extends BaseRichBolt {
 

@@ -10,7 +10,13 @@ public class Grab {
 
     //必须先执行该方法才能使用其他方法
     public static void load(String libPath) {
-        System.load(libPath);
+        if(libPath.contains(".so"))
+        {
+            System.load(libPath);
+        }
+        else {
+            System.loadLibrary(libPath);
+        }
     }
 
     //本地方法，初始化抓帧，参数暂时不用

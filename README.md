@@ -1,5 +1,6 @@
 **将lib.tar.gz解压后，覆盖storm根目录下的lib目录**
 **本工程在jdk1.8.0_102环境下完成**
+**需要在storm的配置文件storm.yaml中加入java.libray.path这一项，内容为.so文件依赖的其他库所在的路径**
 #*提交抓取视频帧的topology的方法：*
 进入$STORM_HOME/bin目录，执行:*storm jar /home/neptune/Grab/StormGrab.jar com.neptune.GrabTopology /home/neptune/Grab/grab_config.json topology-name*
 其中的路径换成两个文件的实际路径，topology-name为拓扑名称，可随意起名
@@ -46,6 +47,7 @@
 - height	int，图片高度；
 - width	int，图片宽度；
 - libPath	String，人脸提取的动态库的绝对路径
+- modelPath	String，so库所需要的model文件夹所在的绝对路径
 - workerNum	int，工作进程数量；
 
 #*提交人脸识别的topology的方法：*
