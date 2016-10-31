@@ -12,6 +12,7 @@ import com.neptune.config.facerig.PictureKey;
 import com.neptune.util.HDFSHelper;
 import com.neptune.util.LogWriter;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.Map;
 
@@ -46,15 +47,19 @@ public class HDFSBolt extends BaseRichBolt {
     @Override
     public void execute(Tuple tuple) {
         //String remote = tuple.getStringByField("fileName");
+        //此处为错误，虽然叫做localPath，实际上是图片的byte流
         String path = tuple.getStringByField("localPath");
-        String remote = (new File(path)).getName();
+        ByteArrayInputStream is = new ByteArrayInputStream(path.getBytes());
+        String remote = "face_" + String.valueOf(System.currentTimeMillis()) + "_" + id + ".jpg";
         Gson gson = new Gson();
         PictureKey key = (PictureKey) tuple.getValueByField("PictureKey");
         key.url = dir + File.separator + remote;
         hdfs = new HDFSHelper(null);
-        File f = new File(path);
+        hdfs.upload(is, key.url);
+
+        /*File f = new File(path);
         hdfs.upload(f, key.url);
-        f.delete();
+        f.delete();*/
 
         collector.emit(new Values(gson.toJson(key)));
         LogWriter.writeLog(logPath, TAG + "@" + id + ": upload to hdfs :" + key.url);
