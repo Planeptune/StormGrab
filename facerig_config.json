@@ -16,7 +16,7 @@
 "height":227,
 "width":227,
 "libPath":"/home/neptune/Grab/libcapdetect.so",
-"modelPath":"/home/neptune/Grab",
+"modelPath":"/home/neptune/Grab/model/seeta_fd_frontal_v1.0.bin",
 "logPath":"/home/neptune/logs/facerig",
 "workerNum":1
 }

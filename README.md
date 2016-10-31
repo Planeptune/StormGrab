@@ -47,7 +47,7 @@
 - height	int，图片高度；
 - width	int，图片宽度；
 - libPath	String，人脸提取的动态库的绝对路径
-- modelPath	String，so库所需要的model文件夹所在的绝对路径
+- modelPath	String，so库所需要的model文件夹中的seeta\_fd\_frontal\_v1.0.bin所在的绝对路径
 - workerNum	int，工作进程数量；
 
 #*提交人脸识别的topology的方法：*
