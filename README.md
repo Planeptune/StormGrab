@@ -1,6 +1,6 @@
 **将lib.tar.gz解压后，覆盖storm根目录下的lib目录**
 **本工程在jdk1.8.0_102环境下完成**
-**需要在storm的配置文件storm.yaml中加入java.libray.path这一项，内容为.so文件依赖的其他库所在的路径**
+**将topology提交到storm集群中运行前，需要在storm的配置文件storm.yaml中加入java.libray.path这一项，内容为工程运行时所需要的库所在的目录，包括.so依赖的动态库所在的目录，多个目录之间使用“\:”分隔，一般内容为系统默认的库目录加系统环境变量LD_LIBRARY_PATH,可以写一个普通java程序加载动态库测试成功后，使用System.getProperty("java.library.path")查看应设置的内容**
 #*提交抓取视频帧的topology的方法：*
 进入$STORM_HOME/bin目录，执行:*storm jar /home/neptune/Grab/StormGrab.jar com.neptune.GrabTopology /home/neptune/Grab/grab_config.json topology-name*
 其中的路径换成两个文件的实际路径，topology-name为拓扑名称，可随意起名
